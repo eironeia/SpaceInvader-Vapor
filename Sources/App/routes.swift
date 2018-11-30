@@ -7,8 +7,13 @@ public func routes(_ router: Router) throws {
         return "It works!"
     }
     
-    // Basic "Hello, world!" example
-    router.get("hello") { req in
-        return "Hello, world!"
+    router.post("name") { _ in
+        return Credentials()
+    }
+    
+    router.post("move") { _ -> Move in
+        let movesType = MoveTypes.allCases
+        let randomIndex = Int.random(in: 0...movesType.count - 1)
+        return Move(movesType[randomIndex].rawValue)
     }
 }

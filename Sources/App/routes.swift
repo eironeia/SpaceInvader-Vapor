@@ -12,8 +12,6 @@ public func routes(_ router: Router) throws {
     }
     
     router.post("move") { _ -> Move in
-        let movesType = MoveTypes.allCases
-        let randomIndex = Int(arc4random_uniform(4))
-        return Move(movesType[randomIndex].rawValue)
+        return Move(MoveTypes.down.rawValue)
     }
 }

@@ -9,10 +9,6 @@ enum MoveTypes: String {
     case fireDown = "fire-down"
     case fireRight = "fire-right"
     case fireLeft = "fire-left"
-    
-    static var allCases: [MoveTypes] {
-        return [.up, .down, .left, .right] //, .fireUp, .fireDown, .fireRight, .fireLeft
-    }
 }
 
 struct Move: Codable {

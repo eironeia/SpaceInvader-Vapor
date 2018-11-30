@@ -13,7 +13,7 @@ public func routes(_ router: Router) throws {
     
     router.post("move") { _ -> Move in
         let movesType = MoveTypes.allCases
-        let randomIndex = Int.random(in: 0...movesType.count - 1)
+        let randomIndex = Int.random(in: 0...3)
         return Move(movesType[randomIndex].rawValue)
     }
 }

@@ -1,6 +1,6 @@
 import Vapor
 
-enum MoveTypes: String, CaseIterable {
+enum MoveTypes: String {
     case up
     case down
     case left
@@ -9,6 +9,10 @@ enum MoveTypes: String, CaseIterable {
     case fireDown = "fire-down"
     case fireRight = "fire-right"
     case fireLeft = "fire-left"
+    
+    static var allCases: [MoveTypes] {
+        return [.up, .down, .left, .right] //, .fireUp, .fireDown, .fireRight, .fireLeft
+    }
 }
 
 struct Move: Codable {

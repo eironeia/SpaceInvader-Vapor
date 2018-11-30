@@ -11,7 +11,7 @@ public func routes(_ router: Router) throws {
         return Credentials()
     }
     
-    router.post("move") { _ -> Move in
+    router.post("move") { req -> Move in
         return Move(MoveTypes.down.rawValue)
     }
 }

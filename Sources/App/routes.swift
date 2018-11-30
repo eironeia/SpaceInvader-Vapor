@@ -7,11 +7,23 @@ public func routes(_ router: Router) throws {
         return "It works!"
     }
     
-    router.post("name") { _ in
-        return Credentials()
-    }
+    let gameController = GameController()
+    try router.register(collection: gameController)
+}
+
+
+struct MockData {
     
-    router.post("move") { req -> Move in
-        return Move(MoveTypes.down.rawValue)
+    func getGameData() -> GameData? {
+        let directory = DirectoryConfig.detect()
+        let configDir = "Sources/App/MockData"
+        do {
+            let data = try Data(contentsOf: URL(fileURLWithPath: directory.workDir)
+                .appendingPathComponent(configDir, isDirectory: true)
+                .appendingPathComponent("GameData.json", isDirectory: false))
+            return try JSONDecoder().decode(GameData.self, from: data)
+        } catch {
+            return nil
+        }
     }
 }

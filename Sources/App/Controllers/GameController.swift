@@ -10,12 +10,10 @@ struct GameController: RouteCollection {
         return Credentials()
     }
     
-    func getNextMove(_ req: Request) throws -> Move {
-//        Uncomment when goes to be uploaded
-//        return try req.content.decode(GameData.self).map { gameData -> Move in
-//            return Move(MoveTypes.down.rawValue)
-//        }
-        
-        return Move(MoveTypes.down.rawValue)
+    func getNextMove(_ req: Request) throws -> Future<Move> {
+        return try req.content.decode(GameData.self).map { gameData -> Move in
+            let decisionController = DecisionController(gameData)
+            return decisionController.getNextMove()
+        }
     }
 }

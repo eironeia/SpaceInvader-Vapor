@@ -13,7 +13,7 @@ struct Invader: Codable {
         return x == position.x && y == position.y && neutral
     }
     
-    func isNoNeutralInvader(position: Position) -> Bool {
+    func isNoNeutralInvaderOn(position: Position) -> Bool {
         return x == position.x && y == position.y && !neutral
     }
 }

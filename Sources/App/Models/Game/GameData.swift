@@ -21,13 +21,13 @@ class GameData: Codable {
 private extension GameData {
     
     func getGoalPosition() -> Position? {
-        return player.getGoalPosition(descriptor: PlayerGoalPositionDescriptor(invaders: invaders, isValidPosition: isValidPosition))
+        return player.getGoalPosition(descriptor: PlayerGoalPositionDescriptor(players: players, invaders: invaders, isValidPosition: isValidPosition))
     }
     
     func isValidPosition(position: Position) -> Bool {
         return !board.walls.contains(position)
             && !players.contains(position)
-            && !invaders.contains { $0.isNoNeutralInvader(position: position) }
+            && !invaders.contains { $0.isNoNeutralInvaderOn(position: position) }
     }
     
     func getMoveToKill() -> Move? {

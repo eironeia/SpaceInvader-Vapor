@@ -103,7 +103,7 @@ private extension Player {
     }
     
     func increaseScores(xPosition: Int, movement: MoveTypes, descriptor: PlayerKillMoveDescriptor, scoresPerMoveTypes: inout [MoveTypes: Int]) {
-        if !isWallBetween(xPosition: xPosition, descriptor: descriptor) {
+        if !position.isWallBetween(xPosition: xPosition, walls: descriptor.walls) {
             if descriptor.players.contains(where: { $0.x == xPosition && $0.y == position.y }) {
                 increaseScores(movement: movement, score: KillScore.player.rawValue, scoresPerMoveTypes: &scoresPerMoveTypes)
             }
@@ -114,7 +114,7 @@ private extension Player {
     }
     
     func increaseScores(yPosition: Int, movement: MoveTypes, descriptor: PlayerKillMoveDescriptor, scoresPerMoveTypes: inout [MoveTypes: Int]) {
-        if !isWallBetween(yPosition: yPosition, descriptor: descriptor) {
+        if !position.isWallBetween(yPosition: yPosition, walls: descriptor.walls) {
             if descriptor.players.contains(where: { $0.y == yPosition && $0.x == position.x }) {
                 increaseScores(movement: movement, score: KillScore.player.rawValue, scoresPerMoveTypes: &scoresPerMoveTypes)
             }
@@ -128,35 +128,5 @@ private extension Player {
         if let currentScore = scoresPerMoveTypes[movement] {
             scoresPerMoveTypes[movement] = currentScore + score
         }
-    }
-    
-    func isWallBetween(xPosition: Int, descriptor: PlayerKillMoveDescriptor) -> Bool {
-        if xPosition < position.x {
-            let range = (xPosition+1...position.x-1)
-            for x in range {
-                if descriptor.walls.contains(where: { $0.x == x && $0.y == position.y}) { return true }
-            }
-        } else {
-            let range = (position.x+1...xPosition-1)
-            for x in range {
-                if descriptor.walls.contains(where: { $0.x == x && $0.y == position.y}) { return true }
-            }
-        }
-        return false
-    }
-    
-    func isWallBetween(yPosition: Int, descriptor: PlayerKillMoveDescriptor) -> Bool {
-        if yPosition < position.y {
-            let range = (yPosition+1...position.y-1)
-            for y in range {
-                if descriptor.walls.contains(where: { $0.y == y && $0.x == position.x}) { return true }
-            }
-        } else {
-            let range = (position.y+1...yPosition-1)
-            for y in range {
-                if descriptor.walls.contains(where: { $0.y == y && $0.x == position.x}) { return true }
-            }
-        }
-        return false
     }
 }

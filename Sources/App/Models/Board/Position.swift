@@ -38,14 +38,37 @@ extension Position {
         return Move.getMove(from: MoveTypes.up)
     }
     
-    func getKillPositions(area: Area) -> [Position] {
-        var positions = [Position]()
-        let xrange = (area.x1...area.x2)
-        let yrange = (area.y1...area.y2)
-        xrange.forEach { if x != $0 { positions.append(Position(x: $0, y: y)) } }
-        yrange.forEach { if y != $0 { positions.append(Position(x: x, y: $0)) } }
-        return positions
+    func isWallBetween(xPosition: Int, walls: [Position]) -> Bool {
+        if xPosition < x {
+            let range = (xPosition+1...x-1)
+            for x in range {
+                if walls.contains(where: { $0.x == x && $0.y == y}) { return true }
+            }
+        } else {
+            let range = (x+1...xPosition-1)
+            for x in range {
+                if walls.contains(where: { $0.x == x && $0.y == y}) { return true }
+            }
+        }
+        return false
     }
+    
+    func isWallBetween(yPosition: Int, walls: [Position]) -> Bool {
+        if yPosition < y {
+            let range = (yPosition+1...y-1)
+            for y in range {
+                if walls.contains(where: { $0.y == y && $0.x == x}) { return true }
+            }
+        } else {
+            let range = (y+1...yPosition-1)
+            for y in range {
+                if walls.contains(where: { $0.y == y && $0.x == x}) { return true }
+            }
+        }
+        return false
+    }
+
+    
     
 //    func getWeightedPositions(area: Area) ->  [WeigtedPositon] {
 //        return getAllPossiblePositions(area: area)
@@ -53,6 +76,8 @@ extension Position {
 //            .sorted { $0.weight < $1.weight }
 //    }
 }
+
+//MARK
 
 private extension Position {
     func getAllPossiblePositions(area: Area) -> [Position] {
@@ -68,7 +93,7 @@ private extension Position {
     }
     
     func distanceTo(position: Position) -> Int {
-        return max(abs(x-position.x), abs(y - position.y))
+        return max(abs(x-x), abs(y - y))
     }
 }
 

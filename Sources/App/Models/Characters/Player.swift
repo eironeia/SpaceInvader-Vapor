@@ -16,6 +16,11 @@ struct PlayerKillMoveDescriptor {
     let walls: [Position]
 }
 
+struct PlayerGoalPositionDescriptor {
+    let invaders: [Invader]
+    let isValidPosition: (Position) -> Bool
+}
+
 struct Player: Codable {
     let id: UUID
     let name: String
@@ -35,7 +40,7 @@ struct Player: Codable {
     }
     
     func getKillMove(descriptor: PlayerKillMoveDescriptor) -> Move? {
-        print(area.x1, area.x2, area.y1, area.y2)
+        print(fire)
         guard fire else { return nil }
         let xrange = (area.x1...area.x2)
         let yrange = (area.y1...area.y2)
@@ -46,9 +51,9 @@ struct Player: Codable {
             return result
         }
         
-        for xPosition in xrange {
-            if position.x != xPosition {
-                increaseScores(xPosition: xPosition, descriptor: descriptor, scoresPerMoveTypes: &scoresPerMoveTypes)
+        xrange.forEach {
+            if position.x != $0 {
+                increaseScores(xPosition: $0, descriptor: descriptor, scoresPerMoveTypes: &scoresPerMoveTypes)
             }
         }
         
@@ -57,7 +62,7 @@ struct Player: Codable {
                 increaseScores(yPosition: $0, descriptor: descriptor, scoresPerMoveTypes: &scoresPerMoveTypes)
             }
         }
-        //TODO: Check before update if there is a wall between
+        
         let highScore = scoresPerMoveTypes.max { a, b in a.value < b.value }
         guard let moveType = highScore?.key,
             highScore?.value != 0 else { return nil }
@@ -69,6 +74,19 @@ struct Player: Codable {
         case .right: return Move.getMove(from: .fireRight)
         default: return nil
         }
+    }
+    
+    func getGoalPosition(descriptor: PlayerGoalPositionDescriptor) -> Position? {
+        let weightedPositions = position.getWeightedPositions(area: area)
+        if let neutralInvaderPosition = getNeutralInvaderPosition(invaders: descriptor.invaders, weightedPositions: weightedPositions) {
+            return neutralInvaderPosition
+        }
+        
+        if let emptyPosition = getEmptyPosition(weightedPositions: weightedPositions, isValidPosition: descriptor.isValidPosition) {
+            return emptyPosition
+        }
+        
+        return nil
     }
 }
 
@@ -107,7 +125,7 @@ private extension Player {
             if descriptor.players.contains(where: { $0.x == xPosition && $0.y == position.y }) {
                 increaseScores(movement: movement, score: KillScore.player.rawValue, scoresPerMoveTypes: &scoresPerMoveTypes)
             }
-            if descriptor.invaders.contains(where: { $0.x == xPosition && $0.y == position.y && !$0.neutral}) {
+            if descriptor.invaders.contains(where: { $0.isNoNeutralInvader(position: Position(x: xPosition, y: position.y))}) {
                 increaseScores(movement: movement, score: KillScore.invader.rawValue, scoresPerMoveTypes: &scoresPerMoveTypes)
             }
         }
@@ -118,7 +136,7 @@ private extension Player {
             if descriptor.players.contains(where: { $0.y == yPosition && $0.x == position.x }) {
                 increaseScores(movement: movement, score: KillScore.player.rawValue, scoresPerMoveTypes: &scoresPerMoveTypes)
             }
-            if descriptor.invaders.contains(where: { $0.y == yPosition && $0.x == position.x && !$0.neutral}) {
+            if descriptor.invaders.contains(where: { $0.isNoNeutralInvader(position: Position(x: position.x, y: yPosition))}) {
                 increaseScores(movement: movement, score: KillScore.invader.rawValue, scoresPerMoveTypes: &scoresPerMoveTypes)
             }
         }
@@ -128,5 +146,22 @@ private extension Player {
         if let currentScore = scoresPerMoveTypes[movement] {
             scoresPerMoveTypes[movement] = currentScore + score
         }
+    }
+}
+
+//MARK: - PlayerGoalPosition
+private extension Player {
+    func getNeutralInvaderPosition(invaders: [Invader], weightedPositions: [WeightedPositon]) -> Position? {
+        return weightedPositions.first { weightedPosition -> Bool in
+            let position = weightedPosition.position
+            return invaders.contains(where: { $0.isNeutralInvaderOn(position: position) })
+            }?.position
+    }
+    
+    func getEmptyPosition(weightedPositions: [WeightedPositon], isValidPosition: (Position) -> Bool) -> Position? {
+        return weightedPositions.first { weightedPosition -> Bool in
+            let position = weightedPosition.position
+            return isValidPosition(position)
+        }?.position
     }
 }

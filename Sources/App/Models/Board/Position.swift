@@ -1,6 +1,6 @@
 import Foundation
 
-struct WeigtedPositon {
+struct WeightedPositon {
     let position: Position
     let weight: Int
 }
@@ -40,12 +40,12 @@ extension Position {
     
     func isWallBetween(xPosition: Int, walls: [Position]) -> Bool {
         if xPosition < x {
-            let range = (xPosition+1...x-1)
+            let range = (xPosition...x)
             for x in range {
                 if walls.contains(where: { $0.x == x && $0.y == y}) { return true }
             }
         } else {
-            let range = (x+1...xPosition-1)
+            let range = (x...xPosition)
             for x in range {
                 if walls.contains(where: { $0.x == x && $0.y == y}) { return true }
             }
@@ -55,30 +55,27 @@ extension Position {
     
     func isWallBetween(yPosition: Int, walls: [Position]) -> Bool {
         if yPosition < y {
-            let range = (yPosition+1...y-1)
+            let range = (yPosition...y)
             for y in range {
                 if walls.contains(where: { $0.y == y && $0.x == x}) { return true }
             }
         } else {
-            let range = (y+1...yPosition-1)
+            let range = (y...yPosition)
             for y in range {
                 if walls.contains(where: { $0.y == y && $0.x == x}) { return true }
             }
         }
         return false
     }
-
     
-    
-//    func getWeightedPositions(area: Area) ->  [WeigtedPositon] {
-//        return getAllPossiblePositions(area: area)
-//            .map {WeigtedPositon(position: $0, weight: $0.distanceTo(position: self))}
-//            .sorted { $0.weight < $1.weight }
-//    }
+    func getWeightedPositions(area: Area) ->  [WeightedPositon] {
+        return getAllPossiblePositions(area: area)
+            .map {WeightedPositon(position: $0, weight: $0.distanceTo(position: self))}
+            .sorted { $0.weight < $1.weight }
+    }
 }
 
-//MARK
-
+//MARK: - GoalPosition
 private extension Position {
     func getAllPossiblePositions(area: Area) -> [Position] {
         var positions = [Position]()

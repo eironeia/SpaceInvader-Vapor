@@ -8,4 +8,12 @@ struct Invader: Codable {
     var position: Position {
         return Position(x: x, y: y)
     }
+    
+    func isNeutralInvaderOn(position: Position) -> Bool {
+        return x == position.x && y == position.y && neutral
+    }
+    
+    func isNoNeutralInvader(position: Position) -> Bool {
+        return x == position.x && y == position.y && !neutral
+    }
 }

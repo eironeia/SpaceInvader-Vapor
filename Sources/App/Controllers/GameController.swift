@@ -12,7 +12,7 @@ class GameController: RouteCollection {
     
     func getMove(_ req: Request) throws -> Future<Move> {
         return try req.content.decode(GameData.self).map { gameData -> Move in
-            return gameData.getNextMove()
+            return gameData.getNextMove() ?? Move.getMove(from: .down)
         }
     }
 }

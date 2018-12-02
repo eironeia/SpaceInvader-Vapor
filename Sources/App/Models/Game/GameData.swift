@@ -10,10 +10,11 @@ class GameData: Codable {
     
     func getNextMove() -> Move {
         if let moveToKill = getMoveToKill() { return moveToKill }
-        let pathFinder = AStarPathfinder()
-        pathFinder.datasource = self
-        let descriptor = PlayerMoveDescriptor(goalPosition: getGoalPosition(), pathFinder: pathFinder)
-        return player.getMove(descriptor: descriptor)
+//        let pathFinder = AStarPathfinder()
+//        pathFinder.datasource = self
+//        let descriptor = PlayerMoveDescriptor(goalPosition: getGoalPosition(), pathFinder: pathFinder)
+//        return player.getMove(descriptor: descriptor)
+        return Move.getMove(from: .down)
     }
 }
 
@@ -32,16 +33,9 @@ private extension GameData {
     }
     
     func getMoveToKill() -> Move? {
-        let killPositions = player.killPositions
-        
-        //Check if there is 
-        
-        return nil
+        let descriptor = PlayerKillMoveDescriptor(players: players, invaders: invaders)
+        return player.getKillMove(descriptor: descriptor)
     }
-//
-//    func getKillablePlayerPosition(positions: [Position]) -> Position? {
-//        return positions.first(where: players.contains)
-//    }
 }
 
 extension GameData: PathFinderDataSource {

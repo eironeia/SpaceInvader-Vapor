@@ -61,7 +61,6 @@ class AStarPathfinder {
             shortestPath.insert(currentStep.position, at: 0)
             currentStep = parent
         }
-        shortestPath.forEach{ print("\($0.x) - \($0.y)") }
         return shortestPath
     }
 }

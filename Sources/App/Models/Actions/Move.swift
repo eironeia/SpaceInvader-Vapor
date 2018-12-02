@@ -1,12 +1,5 @@
 import Vapor
 
-enum Movement: String, CaseIterable {
-    case up
-    case down
-    case left
-    case right
-}
-
 enum MoveTypes: String, CaseIterable {
     case up
     case down

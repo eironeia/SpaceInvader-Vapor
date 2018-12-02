@@ -33,7 +33,7 @@ private extension GameData {
     }
     
     func getMoveToKill() -> Move? {
-        let descriptor = PlayerKillMoveDescriptor(players: players, invaders: invaders)
+        let descriptor = PlayerKillMoveDescriptor(players: players, invaders: invaders, walls: board.walls)
         return player.getKillMove(descriptor: descriptor)
     }
 }

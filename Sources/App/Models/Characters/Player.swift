@@ -1,5 +1,10 @@
 import Foundation
 
+enum KillScore: Int {
+    case player = 101
+    case invader = 50
+}
+
 struct PlayerMoveDescriptor {
     let goalPosition: Position
     let pathFinder: AStarPathfinder
@@ -100,10 +105,10 @@ private extension Player {
     func increaseScores(xPosition: Int, movement: MoveTypes, descriptor: PlayerKillMoveDescriptor, scoresPerMoveTypes: inout [MoveTypes: Int]) {
         if !isWallBetween(xPosition: xPosition, descriptor: descriptor) {
             if descriptor.players.contains(where: { $0.x == xPosition && $0.y == position.y }) {
-                increaseScores(movement: movement, score: 100, scoresPerMoveTypes: &scoresPerMoveTypes)
+                increaseScores(movement: movement, score: KillScore.player.rawValue, scoresPerMoveTypes: &scoresPerMoveTypes)
             }
             if descriptor.invaders.contains(where: { $0.x == xPosition && $0.y == position.y && !$0.neutral}) {
-                increaseScores(movement: movement, score: 50, scoresPerMoveTypes: &scoresPerMoveTypes)
+                increaseScores(movement: movement, score: KillScore.invader.rawValue, scoresPerMoveTypes: &scoresPerMoveTypes)
             }
         }
     }
@@ -111,10 +116,10 @@ private extension Player {
     func increaseScores(yPosition: Int, movement: MoveTypes, descriptor: PlayerKillMoveDescriptor, scoresPerMoveTypes: inout [MoveTypes: Int]) {
         if !isWallBetween(yPosition: yPosition, descriptor: descriptor) {
             if descriptor.players.contains(where: { $0.y == yPosition && $0.x == position.x }) {
-                increaseScores(movement: movement, score: 100, scoresPerMoveTypes: &scoresPerMoveTypes)
+                increaseScores(movement: movement, score: KillScore.player.rawValue, scoresPerMoveTypes: &scoresPerMoveTypes)
             }
             if descriptor.invaders.contains(where: { $0.y == yPosition && $0.x == position.x && !$0.neutral}) {
-                increaseScores(movement: movement, score: 50, scoresPerMoveTypes: &scoresPerMoveTypes)
+                increaseScores(movement: movement, score: KillScore.invader.rawValue, scoresPerMoveTypes: &scoresPerMoveTypes)
             }
         }
     }

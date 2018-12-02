@@ -1,0 +1,18 @@
+Kill status
+	- player = 100
+	- invader = 50
+	- bekilled = -25
+
+Invaders neutrals are yummie
+
+----
+
+Priorities:
+
+1. 
+
+if playerCanShoot {
+	if there are invaders (no neutrals) on range { return fireMove }
+}
+
+if there are neutrals invaders { return closest position }

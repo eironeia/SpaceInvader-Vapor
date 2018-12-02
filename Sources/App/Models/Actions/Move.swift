@@ -1,5 +1,12 @@
 import Vapor
 
+enum Movement: String, CaseIterable {
+    case up
+    case down
+    case left
+    case right
+}
+
 enum MoveTypes: String, CaseIterable {
     case up
     case down
@@ -16,6 +23,10 @@ struct Move: Codable {
 
     init(_ move: String) {
         self.move = move
+    }
+    
+    static func getMove(from moveType: MoveTypes) -> Move {
+        return Move(moveType.rawValue)
     }
 }
 

@@ -1,7 +1,7 @@
 import Foundation
 
 /** A single step on the computed path; used by the A* pathfinding algorithm */
-class ShortestPathStep: Hashable {
+class ShortestPathStep {
     let position: Position
     var parent: ShortestPathStep?
     
@@ -9,10 +9,6 @@ class ShortestPathStep: Hashable {
     var hScore = 0
     var fScore: Int {
         return gScore + hScore
-    }
-    
-    var hashValue: Int {
-        return position.x.hashValue + position.y.hashValue
     }
     
     init(position: Position) {
@@ -36,6 +32,12 @@ extension ShortestPathStep: CustomStringConvertible {
     }
 }
 
-
+extension ShortestPathStep: Hashable {
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(position.x.hashValue)
+    }
+    
+}
 
 

@@ -82,16 +82,21 @@ struct Player: Codable {
         print("Fire:",fire)
         
         if let neutralInvaderPosition = getNeutralInvaderPosition(invaders: descriptor.invaders, pathFinder: descriptor.pathFinder) {
-            print("NEUTRAL WAY")
+            print("Finding Neutral Invader \(neutralInvaderPosition)")
             return neutralInvaderPosition
         }
         
-        if let noNeutralInvaderPosition = getNoNeutralInvaderPosition(invaders: descriptor.invaders, pathFinder: descriptor.pathFinder) {
-            print("NO NEUTRAL WAY")
-            return noNeutralInvaderPosition
-        }
+//        if let emptyPosition = getEmptyPosition(isValidPosition: descriptor.isValidPosition) {
+//            print("Going to empty position \(emptyPosition)")
+//            return emptyPosition
+//        }
         
-        print("Going position \(1) \(1), from \(position)")
+//        if let noNeutralInvaderPosition = getNoNeutralInvaderPosition(invaders: descriptor.invaders, pathFinder: descriptor.pathFinder) {
+//            print("NO NEUTRAL WAY")
+//            return noNeutralInvaderPosition
+//        }
+        
+        print("Going random position")
         return Position(x: 1, y: 1)
         //        let shortestPathToPlayers = descriptor.players.compactMap { descriptor.pathFinder.shortestPath(current: position, goal: $0) }
     }
@@ -159,16 +164,11 @@ private extension Player {
 //MARK: - PlayerGoalPosition
 private extension Player {
     func getNeutralInvaderPosition(invaders: [Invader], pathFinder: AStarPathfinder) -> Position? {
-        let shortestPathToNeutral = invaders.filter { $0.neutral }.compactMap { pathFinder.shortestPath(current: position, goal: $0.position) }
-        return shortestPathToNeutral.min { $0.count < $1.count }?.first
+        return invaders.filter { $0.neutral }.min { position.distanceTo(position: $0.position) < position.distanceTo(position: $1.position) }?.position
     }
     
-    func getEmptyPosition(weightedPositions: [WeightedPositon], isValidPosition: (Position) -> Bool) -> Position? {
-        return weightedPositions.first { weightedPosition -> Bool in
-            let position = weightedPosition.position
-            if position == self.previous { return false }
-            return isValidPosition(position)
-            }?.position
+    func getEmptyPosition(isValidPosition: (Position) -> Bool) -> Position? {
+        return area.getPositionsOfArea(without: position).filter { $0 != previous }.min { position.distanceTo(position: $0) < position.distanceTo(position: $1) }
     }
     
     func getPlayerPositionIfFire(players: [Position], pathFinder: AStarPathfinder) -> Position? {

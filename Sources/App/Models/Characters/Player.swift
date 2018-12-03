@@ -19,6 +19,7 @@ struct PlayerKillMoveDescriptor {
 struct PlayerGoalPositionDescriptor {
     let players: [Position]
     let invaders: [Invader]
+    let pathFinder: AStarPathfinder
     let isValidPosition: (Position) -> Bool
 }
 
@@ -31,7 +32,6 @@ struct Player: Codable {
     let fire: Bool
     
     func getMove(descriptor: PlayerMoveDescriptor) -> Move {
-        print(fire)
         let shortestPath = descriptor.pathFinder.shortestPath(current: position, goal: descriptor.goalPosition)
         if let shortestPath = shortestPath,
             let nextPosition = shortestPath.first {
@@ -78,29 +78,22 @@ struct Player: Codable {
     }
     
     func getGoalPosition(descriptor: PlayerGoalPositionDescriptor) -> Position? {
-        let weightedPositions = position.getWeightedPositions(area: area)
         
-        if let neutralInvaderPosition = getNeutralInvaderPosition(weightedPositions: weightedPositions, invaders: descriptor.invaders) {
-            print("Neutral invader position: \(neutralInvaderPosition)")
+        print("Fire:",fire)
+        
+        if let neutralInvaderPosition = getNeutralInvaderPosition(invaders: descriptor.invaders, pathFinder: descriptor.pathFinder) {
+            print("NEUTRAL WAY")
             return neutralInvaderPosition
         }
         
-        guard fire else { return nil } //Or whatever position more convinient, go far from enemies
-//        if let playerPosition = getPlayerPositionIfFire(weightedPositions: weightedPositions, players: descriptor.players) {
-//            return playerPosition
-//        }
-
-//        if let noNeutralInvaderPosition = getNoNeutralInvaderPosition(weightedPositions: weightedPositions, invaders: descriptor.invaders) {
-//            print("No neutral invader position:", noNeutralInvaderPosition)
-//            return noNeutralInvaderPosition
-//        }
-
-        if let emptyPosition = getEmptyPosition(weightedPositions: weightedPositions, isValidPosition: descriptor.isValidPosition) {
-            print("Empty position: \(emptyPosition)")
-            return emptyPosition
+        if let noNeutralInvaderPosition = getNoNeutralInvaderPosition(invaders: descriptor.invaders, pathFinder: descriptor.pathFinder) {
+            print("NO NEUTRAL WAY")
+            return noNeutralInvaderPosition
         }
-        print("No movement found")
-        return nil
+        
+        print("Going position \(1) \(1), from \(position)")
+        return Position(x: 1, y: 1)
+        //        let shortestPathToPlayers = descriptor.players.compactMap { descriptor.pathFinder.shortestPath(current: position, goal: $0) }
     }
 }
 
@@ -165,36 +158,42 @@ private extension Player {
 
 //MARK: - PlayerGoalPosition
 private extension Player {
-    func getNeutralInvaderPosition(weightedPositions: [WeightedPositon], invaders: [Invader]) -> Position? {
-        return weightedPositions.first { weightedPosition -> Bool in
-            let position = weightedPosition.position
-            return invaders.contains(where: { $0.isNeutralInvaderOn(position: position) })
-            }?.position
+    func getNeutralInvaderPosition(invaders: [Invader], pathFinder: AStarPathfinder) -> Position? {
+        let shortestPathToNeutral = invaders.filter { $0.neutral }.compactMap { pathFinder.shortestPath(current: position, goal: $0.position) }
+        return shortestPathToNeutral.min { $0.count < $1.count }?.first
     }
     
     func getEmptyPosition(weightedPositions: [WeightedPositon], isValidPosition: (Position) -> Bool) -> Position? {
         return weightedPositions.first { weightedPosition -> Bool in
             let position = weightedPosition.position
+            if position == self.previous { return false }
             return isValidPosition(position)
-        }?.position
-    }
-    
-    func getPlayerPositionIfFire(weightedPositions: [WeightedPositon], players: [Position]) -> Position? {
-        return weightedPositions.first { weightedPosition -> Bool in
-            let position = weightedPosition.position
-            return players.contains(where: { $0 == position })
             }?.position
     }
     
-    func getNoNeutralInvaderPosition(weightedPositions: [WeightedPositon], invaders: [Invader]) -> Position? {
-        return weightedPositions.first { weightedPosition -> Bool in
-            let position = weightedPosition.position
-            let containsNoNeutral = invaders.contains(where: { $0.isNoNeutralInvaderOn(position: position) })
-            return containsNoNeutral
-            }?.position
+    func getPlayerPositionIfFire(players: [Position], pathFinder: AStarPathfinder) -> Position? {
+        guard fire else { return nil }
+        let shortestPathToPlayer = players.compactMap { pathFinder.shortestPath(current: position, goal: $0) }
+        return shortestPathToPlayer.min { $0.count < $1.count }?.first
     }
     
-    //Go to player if there is fire ON
-    //Go to invader if there is fire ON
-    
+    func getNoNeutralInvaderPosition(invaders: [Invader], pathFinder: AStarPathfinder) -> Position? {
+        print("Fire: ", fire)
+        guard fire else { return nil }
+        return Position(x: 1, y: 1)
+        
+//        var killPositionsInvaders = [Position]()
+//        let neutralsInvaders = invaders.filter { !$0.neutral }
+//        neutralsInvaders.forEach {
+//            killPositionsInvaders += $0.position.getKillPositions(area: area)
+//        }
+//        return killPositionsInvaders.min { $0.distanceTo(position: position) < $1.distanceTo(position: position) }
+        
+        
+//        var killPositionsInvaders = [Position]()
+//        invaders.filter { !$0.neutral }.forEach {
+//            killPositionsInvaders += $0.position.getKillPositions(area: area)
+//        }
+//        return killPositionsInvaders.compactMap { pathFinder.shortestPath(current: position, goal: $0) }.min { $0.count < $1.count }?.first
+    }
 }

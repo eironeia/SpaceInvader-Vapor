@@ -23,7 +23,7 @@ struct Position: Codable {
     
 }
 
-//MARK: -
+//MARK: - Movement
 extension Position {
     
     func adjacentPositions() -> [Position] {
@@ -67,30 +67,22 @@ extension Position {
         }
         return false
     }
-    
-    func getWeightedPositions(area: Area) ->  [WeightedPositon] {
-        return getAllPossiblePositions(area: area)
-            .map {WeightedPositon(position: $0, weight: $0.distanceTo(position: self))}
-            .sorted { $0.weight < $1.weight }
-    }
 }
 
 //MARK: - GoalPosition
-private extension Position {
-    func getAllPossiblePositions(area: Area) -> [Position] {
-        var positions = [Position]()
-        let xrange = (area.x1...area.x2)
-        let yrange = (area.y1...area.y2)
-        xrange.forEach { xCoord in
-            yrange.forEach { yCoord in
-                if x != xCoord && y != yCoord { positions.append(Position(x: xCoord, y: yCoord)) }
-            }
-        }
-        return positions
-    }
-    
+extension Position {
     func distanceTo(position: Position) -> Int {
         return max(abs(x-x), abs(y - y))
+    }
+}
+
+//MARK: - Positions to kill
+extension Position {
+    func getKillPositions(area: Area) -> [Position] {
+        var positions = [Position]()
+        positions += area.getHorizontalPositions(without: self)
+        positions += area.getVerticalPositions(without: self)
+        return positions
     }
 }
 

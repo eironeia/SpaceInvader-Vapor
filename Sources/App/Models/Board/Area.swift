@@ -1,6 +1,12 @@
 import Foundation
 
-struct Area: Codable {
+protocol AreaProtocol {
+    func getPositionsOfArea(without position: Position) -> [Position]
+    func getVerticalPositions(without position: Position) -> [Position]
+    func getHorizontalPositions(without position: Position) -> [Position]
+}
+
+struct Area: Codable, AreaProtocol {
     let y1: Int
     let x1: Int
     let y2: Int

@@ -1,8 +1,20 @@
 import Foundation
 
-struct WeightedPositon {
-    let position: Position
-    let weight: Int
+protocol KillPositionProtocol {
+    func getKillPositions(area: Area) -> [Position]
+}
+
+protocol DistancePositionProtocol {
+    func distanceTo(position: Position) -> Int
+}
+
+protocol PositionInvalidProtocol {
+    func isWallBetween(xPosition: Int, walls: [Position]) -> Bool
+    func isWallBetween(yPosition: Int, walls: [Position]) -> Bool
+}
+
+protocol MovementPositionProtocol {
+    func getMove(to nextPosition: Position) -> Move
 }
 
 struct Position: Codable {
@@ -20,16 +32,14 @@ struct Position: Codable {
     private var topRight: Position { return Position(x: x + 1, y: y - 1) }
     private var bottomLeft: Position { return Position(x: x - 1, y: y + 1) }
     private var bottomRight: Position { return Position(x: x + 1, y: y + 1) }
-    
-}
-
-//MARK: - Movement
-extension Position {
-    
+ 
     func adjacentPositions() -> [Position] {
         return [top, left, down, right]
     }
-    
+}
+
+//MARK: - Movement
+extension Position: MovementPositionProtocol {
     func getMove(to nextPosition: Position) -> Move {
         if nextPosition.y < y { return Move.getMove(from: MoveTypes.up) }
         if nextPosition.y > y { return Move.getMove(from: MoveTypes.down) }
@@ -37,7 +47,10 @@ extension Position {
         if nextPosition.x > x { return Move.getMove(from: MoveTypes.right) }
         return Move.getMove(from: MoveTypes.up)
     }
-    
+}
+
+//MARK: - PositionInvalidProtocol
+extension Position: PositionInvalidProtocol {
     func isWallBetween(xPosition: Int, walls: [Position]) -> Bool {
         if xPosition < x {
             let range = (xPosition...x)
@@ -69,15 +82,15 @@ extension Position {
     }
 }
 
-//MARK: - GoalPosition
-extension Position {
+//MARK: - DistancePositionProtocol
+extension Position: DistancePositionProtocol {
     func distanceTo(position: Position) -> Int {
         return max(abs(x-x), abs(y - y))
     }
 }
 
-//MARK: - Positions to kill
-extension Position {
+//MARK: - KillPositionProtocol
+extension Position: KillPositionProtocol {
     func getKillPositions(area: Area) -> [Position] {
         var positions = [Position]()
         positions += area.getHorizontalPositions(without: self)
@@ -86,6 +99,7 @@ extension Position {
     }
 }
 
+//MARK: - Equatable
 extension Position: Equatable {}
 func ==(lhs: Position, rhs: Position) -> Bool {
     return lhs.y == rhs.y && lhs.x == rhs.x
@@ -95,6 +109,7 @@ func -(lhs: Position, rhs: Position) -> Position {
     return Position(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
 }
 
+//MARK: - CustomStringConvertible
 extension Position: CustomStringConvertible {
     var description: String {
         return "(\(x), \(y))"

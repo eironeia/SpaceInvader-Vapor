@@ -85,17 +85,7 @@ struct Player: Codable {
             print("Finding Neutral Invader \(neutralInvaderPosition)")
             return neutralInvaderPosition
         }
-        
-//        if let emptyPosition = getEmptyPosition(isValidPosition: descriptor.isValidPosition) {
-//            print("Going to empty position \(emptyPosition)")
-//            return emptyPosition
-//        }
-        
-//        if let noNeutralInvaderPosition = getNoNeutralInvaderPosition(invaders: descriptor.invaders, pathFinder: descriptor.pathFinder) {
-//            print("NO NEUTRAL WAY")
-//            return noNeutralInvaderPosition
-//        }
-        
+      
         print("Going random position")
         return Position(x: 1, y: 1)
         //        let shortestPathToPlayers = descriptor.players.compactMap { descriptor.pathFinder.shortestPath(current: position, goal: $0) }
@@ -167,33 +157,28 @@ private extension Player {
         return invaders.filter { $0.neutral }.min { position.distanceTo(position: $0.position) < position.distanceTo(position: $1.position) }?.position
     }
     
+    func getNoNeutralInvaderPosition(invaders: [Invader]) -> Position? {
+        print("Fire: ", fire)
+        guard fire else { return nil }
+        var killPositionsInvaders = [Position]()
+        let neutralsInvaders = invaders.filter { !$0.neutral }
+        print("Getting Kill positions")
+        neutralsInvaders.forEach {
+            killPositionsInvaders += $0.position.getKillPositions(area: area)
+        }
+        print("Finding min")
+        return killPositionsInvaders.min { $0.distanceTo(position: position) < $1.distanceTo(position: position) }
+    }
+    
+    //LATER?
     func getEmptyPosition(isValidPosition: (Position) -> Bool) -> Position? {
         return area.getPositionsOfArea(without: position).filter { $0 != previous }.min { position.distanceTo(position: $0) < position.distanceTo(position: $1) }
     }
     
     func getPlayerPositionIfFire(players: [Position], pathFinder: AStarPathfinder) -> Position? {
         guard fire else { return nil }
-        let shortestPathToPlayer = players.compactMap { pathFinder.shortestPath(current: position, goal: $0) }
+        let shortestPathToPlayer = players.compactMap { pathFinder.shortestPath(current: position, goal: $0) } //WE SHOUDN'T CALL A SHORTEST PATH
         return shortestPathToPlayer.min { $0.count < $1.count }?.first
     }
     
-    func getNoNeutralInvaderPosition(invaders: [Invader], pathFinder: AStarPathfinder) -> Position? {
-        print("Fire: ", fire)
-        guard fire else { return nil }
-        return Position(x: 1, y: 1)
-        
-//        var killPositionsInvaders = [Position]()
-//        let neutralsInvaders = invaders.filter { !$0.neutral }
-//        neutralsInvaders.forEach {
-//            killPositionsInvaders += $0.position.getKillPositions(area: area)
-//        }
-//        return killPositionsInvaders.min { $0.distanceTo(position: position) < $1.distanceTo(position: position) }
-        
-        
-//        var killPositionsInvaders = [Position]()
-//        invaders.filter { !$0.neutral }.forEach {
-//            killPositionsInvaders += $0.position.getKillPositions(area: area)
-//        }
-//        return killPositionsInvaders.compactMap { pathFinder.shortestPath(current: position, goal: $0) }.min { $0.count < $1.count }?.first
-    }
 }

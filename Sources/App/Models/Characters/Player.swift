@@ -79,11 +79,13 @@ struct Player: Codable {
     
     func getGoalPosition(descriptor: PlayerGoalPositionDescriptor) -> Position? {
         let weightedPositions = position.getWeightedPositions(area: area)
-        print("Current: \(position)")
+        
         if let neutralInvaderPosition = getNeutralInvaderPosition(weightedPositions: weightedPositions, invaders: descriptor.invaders) {
             print("Neutral invader position: \(neutralInvaderPosition)")
             return neutralInvaderPosition
         }
+        
+        guard fire else { return nil } //Or whatever position more convinient, go far from enemies
 //        if let playerPosition = getPlayerPositionIfFire(weightedPositions: weightedPositions, players: descriptor.players) {
 //            return playerPosition
 //        }
@@ -178,7 +180,6 @@ private extension Player {
     }
     
     func getPlayerPositionIfFire(weightedPositions: [WeightedPositon], players: [Position]) -> Position? {
-        guard fire else { return nil }
         return weightedPositions.first { weightedPosition -> Bool in
             let position = weightedPosition.position
             return players.contains(where: { $0 == position })
@@ -186,14 +187,9 @@ private extension Player {
     }
     
     func getNoNeutralInvaderPosition(weightedPositions: [WeightedPositon], invaders: [Invader]) -> Position? {
-        print("No neutral invader position")
-        guard fire else { return nil }
-        print("Fire:", fire)
         return weightedPositions.first { weightedPosition -> Bool in
             let position = weightedPosition.position
-            print("Getting no neutral...")
             let containsNoNeutral = invaders.contains(where: { $0.isNoNeutralInvaderOn(position: position) })
-            print("Result:", containsNoNeutral)
             return containsNoNeutral
             }?.position
     }

@@ -45,7 +45,7 @@ struct Player: Codable {
         guard fire else { return nil }
         let xrange = (area.x1...area.x2)
         let yrange = (area.y1...area.y2)
-        let moveTypes: [MoveTypes] = [.up, .left, .down, .right]
+        let moveTypes: [MoveTypes] = MoveTypes.movements
         var scoresPerMoveTypes = moveTypes.reduce([MoveTypes: Int]()) { (result, movement) -> [MoveTypes: Int] in
             var result = result
             result[movement] = 0
@@ -79,21 +79,25 @@ struct Player: Codable {
     
     func getGoalPosition(descriptor: PlayerGoalPositionDescriptor) -> Position? {
         let weightedPositions = position.getWeightedPositions(area: area)
+        print("Current: \(position)")
         if let neutralInvaderPosition = getNeutralInvaderPosition(weightedPositions: weightedPositions, invaders: descriptor.invaders) {
+            print("Neutral invader position: \(neutralInvaderPosition)")
             return neutralInvaderPosition
         }
-        
-        if let playerPosition = getPlayerPositionIfFire(weightedPositions: weightedPositions, players: descriptor.players) {
-            return playerPosition
-        }
-        
-        if let noNeutralInvaderPosition = getNoNeutralInvaderPosition(weightedPositions: weightedPositions, invaders: descriptor.invaders) {
-            return noNeutralInvaderPosition
-        }
-        
+//        if let playerPosition = getPlayerPositionIfFire(weightedPositions: weightedPositions, players: descriptor.players) {
+//            return playerPosition
+//        }
+
+//        if let noNeutralInvaderPosition = getNoNeutralInvaderPosition(weightedPositions: weightedPositions, invaders: descriptor.invaders) {
+//            print("No neutral invader position:", noNeutralInvaderPosition)
+//            return noNeutralInvaderPosition
+//        }
+
         if let emptyPosition = getEmptyPosition(weightedPositions: weightedPositions, isValidPosition: descriptor.isValidPosition) {
+            print("Empty position: \(emptyPosition)")
             return emptyPosition
         }
+        print("No movement found")
         return nil
     }
 }
@@ -182,10 +186,15 @@ private extension Player {
     }
     
     func getNoNeutralInvaderPosition(weightedPositions: [WeightedPositon], invaders: [Invader]) -> Position? {
+        print("No neutral invader position")
         guard fire else { return nil }
+        print("Fire:", fire)
         return weightedPositions.first { weightedPosition -> Bool in
             let position = weightedPosition.position
-            return invaders.contains(where: { $0.isNoNeutralInvaderOn(position: position) })
+            print("Getting no neutral...")
+            let containsNoNeutral = invaders.contains(where: { $0.isNoNeutralInvaderOn(position: position) })
+            print("Result:", containsNoNeutral)
+            return containsNoNeutral
             }?.position
     }
     

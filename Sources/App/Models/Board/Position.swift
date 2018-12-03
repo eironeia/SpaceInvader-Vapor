@@ -83,7 +83,7 @@ private extension Position {
         let yrange = (area.y1...area.y2)
         xrange.forEach { xCoord in
             yrange.forEach { yCoord in
-                positions.append(Position(x: xCoord, y: yCoord))
+                if x != xCoord && y != yCoord { positions.append(Position(x: xCoord, y: yCoord)) }
             }
         }
         return positions

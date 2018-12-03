@@ -9,7 +9,9 @@ class GameData: Codable {
     let invaders: [Invader]
     
     func getNextMove() -> Move? {
+        print("Move")
         if let moveToKill = getMoveToKill() { return moveToKill }
+        print("Finding path")
         let pathFinder = AStarPathfinder()
         pathFinder.datasource = self
         guard let goalPosition = getGoalPosition() else { return nil }

@@ -6,20 +6,16 @@ enum KillScore: Int {
 }
 
 struct PlayerMoveDescriptor {
-    let goalPosition: Position
+    let players: [Position]
+    let invaders: [Invader]
     let pathFinder: AStarPathfinder
+    let isValidPosition: (Position) -> Bool
 }
 
 struct PlayerKillMoveDescriptor {
     let players: [Position]
     let invaders: [Invader]
     let walls: [Position]
-}
-
-struct PlayerGoalPositionDescriptor {
-    let players: [Position]
-    let invaders: [Invader]
-    let isValidPosition: (Position) -> Bool
 }
 
 struct Player: Codable {
@@ -35,12 +31,10 @@ struct Player: Codable {
     }
     
     func getMove(descriptor: PlayerMoveDescriptor) -> Move {
-        print("Getting shortest path... 🥳")
-        let shortestPath = descriptor.pathFinder.shortestPath(current: position, goal: descriptor.goalPosition) //Add multiple options first neutral invaders, etc. checking for multiple options paths
-        if let shortestPath = shortestPath,
-            let nextPosition = shortestPath.first {
+        print("Getting next move with shortest path... 🥳")
+        if let goalPosition = getGoalPosition(descriptor: descriptor) {
             print("😎¡CALCULATED!🤓")
-            return position.getMove(to: nextPosition)
+            return position.getMove(to: goalPosition)
         } else {
             print("NOT SHORTED PATH FOUND THINK SOMETHING DUDE!🚨🤯")
             return Move(MoveTypes.left.rawValue)
@@ -81,19 +75,6 @@ struct Player: Codable {
         case .right: return Move.getMove(from: .fireRight)
         default: return nil
         }
-    }
-    
-    func getGoalPosition(descriptor: PlayerGoalPositionDescriptor) -> Position? {
-        
-        if let neutralInvaderPosition = getNeutralInvaderPosition(invaders: descriptor.invaders) {
-            return neutralInvaderPosition
-        }
-        
-        if let noNeutralInvaderPosition = getInvaderPosition(invaders: descriptor.invaders, isValidPosition: descriptor.isValidPosition) {
-            return noNeutralInvaderPosition
-        }
-        
-        return Position(x: Int(area.x2/(area.x1 == 0 ? 1 : area.x1)), y: Int(area.y2/(area.y1 == 0 ? 1 : area.y1)))
     }
 }
 
@@ -158,18 +139,63 @@ private extension Player {
 
 //MARK: - PlayerGoalPosition
 extension Player {
+    func getGoalPosition(descriptor: PlayerMoveDescriptor) -> Position? {
+        
+        if let neutralInvaderPosition = getNeutralInvaderPosition(invaders: descriptor.invaders),
+            let nextPosition = getNextPosition(pathFinder: descriptor.pathFinder, goalPosition: neutralInvaderPosition) {
+            print("GOING TO 👻")
+            return nextPosition
+        }
+        
+        if let playerPosition = getPlayerPosition(players: descriptor.players, isValidPosition: descriptor.isValidPosition),
+            let nextPosition = getNextPosition(pathFinder: descriptor.pathFinder, goalPosition: playerPosition) {
+            print("GOING TO 🚀")
+            return nextPosition
+        }
+        
+        if let noNeutralInvaderPosition = getInvaderPosition(invaders: descriptor.invaders, isValidPosition: descriptor.isValidPosition),
+            let nextPosition = getNextPosition(pathFinder: descriptor.pathFinder, goalPosition: noNeutralInvaderPosition) {
+            print("GOING TO 👾")
+            return nextPosition
+        }
+        
+        print("RANDOM 🤪")
+        return Position(x: Int(area.x2/(area.x1 == 0 ? 1 : area.x1)), y: Int(area.y2/(area.y1 == 0 ? 1 : area.y1)))
+    }
+    
+    private func getNextPosition(pathFinder: AStarPathfinder, goalPosition: Position) -> Position? {
+        let shortestPath = pathFinder.shortestPath(current: position, goal: goalPosition)
+        return shortestPath?.first
+    }
+    
     func getInvaderPosition(invaders: [Invader], isValidPosition: (Position) -> Bool) -> Position? {
         guard fire else { return nil }
-        let neutralInvaders = invaders.filter { !$0.neutral }
-        var killPositionsNeutralInvader = [Position]()
-        neutralInvaders.forEach {
-            killPositionsNeutralInvader += $0.getKillPositions(area: area)
-        }
-        killPositionsNeutralInvader = killPositionsNeutralInvader.filter(isValidPosition)
-        return killPositionsNeutralInvader.min { return position.stepsTo(position: $0) < position.stepsTo(position: $1) }
+        let neutralInvadersPosition = invaders.filter { !$0.neutral }.map { $0.position }
+        return getKillTargetPosition(target: neutralInvadersPosition, isValidPosition: isValidPosition)
     }
     
     func getNeutralInvaderPosition(invaders: [Invader]) -> Position? {
         return invaders.filter { return $0.neutral }.min { position.stepsTo(position: $0.position) < position.stepsTo(position: $1.position) }?.position
+    }
+    
+    func getPlayerPosition(players: [Position], isValidPosition: (Position) -> Bool) -> Position? {
+        guard fire else { return nil }
+        return getKillTargetPosition(target: players, isValidPosition: isValidPosition)
+    }
+    
+    //Dodge player shot if not fire
+    func dogePlayerPosition() -> Position? {
+        return nil
+    }
+    
+    //Move away of aliens & players
+    
+    //HELPER
+    private func getKillTargetPosition(target: [Position], isValidPosition: (Position) -> Bool) -> Position? {
+        var killPositions = [Position]()
+        target.forEach {
+            killPositions += $0.getKillPositions(area: area)
+        }
+        return killPositions.filter(isValidPosition).min { return position.stepsTo(position: $0) < position.stepsTo(position: $1) }
     }
 }

@@ -98,10 +98,6 @@ extension PlayerTests {
 //MARK: - getGoalPosition
 extension PlayerTests {
     
-    func getPlayerGoalPositionDescriptor(players: [Position] = [Position](), invaders: [Invader] = [Invader](), walls: [Position] = [Position](), isValidPosition: @escaping (Position) -> Bool) -> PlayerGoalPositionDescriptor {
-        return PlayerGoalPositionDescriptor(players: players, invaders: invaders, isValidPosition: isValidPosition)
-    }
-    
     //X = CURRENT PLAYER
     //   I     I    NI
     // (0,1) (1,1) (2,1)
@@ -138,12 +134,3 @@ extension PlayerTests {
             && !invaders.contains { $0.isNoNeutralInvaderOn(position: position) }
     }
 }
-
-
-
-
-//struct PlayerGoalPositionDescriptor {
-//    let players: [Position]
-//    let invaders: [Invader]
-//    let isValidPosition: (Position) -> Bool
-//}

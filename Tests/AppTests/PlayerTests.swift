@@ -127,8 +127,7 @@ extension PlayerTests {
             return self.isValidPosition(position: position, players: players, invaders: invaders)
         }
 
-        if  player.fire,
-            let position = player.getInvaderPosition(invaders: invaders, isValidPosition: isValidPosition) {
+        if  let position = player.getInvaderPosition(invaders: invaders, isValidPosition: isValidPosition) {
             XCTAssertEqual(Position(x: 0, y: 2), position)
         }
     }

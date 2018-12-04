@@ -43,7 +43,7 @@ private extension GameData {
 extension GameData: PathFinderDataSource {
     func possibleNextPositions(from position: Position) -> [Position] {
         let adjacentTiles = position.adjacentPositions()
-        return adjacentTiles.filter(isValidPosition)
+        return adjacentTiles.filter(player.isPositionOnArea).filter(isValidPosition)
     }
     
     func costOfNextPosition(current: Position, adjacent: Position) -> Int {

@@ -16,7 +16,7 @@ enum MoveTypes: String, CaseIterable {
 }
 
 struct Move: Codable {
-    private let move: String
+    let move: String
 
     init(_ move: String) {
         self.move = move
@@ -26,5 +26,12 @@ struct Move: Codable {
         return Move(moveType.rawValue)
     }
 }
+
+//MARK: - Equatable
+extension Move: Equatable {}
+func ==(lhs: Move, rhs: Move) -> Bool {
+    return lhs.move == rhs.move
+}
+
 
 extension Move: Content {}

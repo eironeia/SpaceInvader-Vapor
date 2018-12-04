@@ -7,8 +7,8 @@ protocol InvaderProtocol {
 }
 
 struct Invader: Codable, InvaderProtocol {
-    let y: Int
     let x: Int
+    let y: Int
     let neutral: Bool
     
     var position: Position {
@@ -16,10 +16,16 @@ struct Invader: Codable, InvaderProtocol {
     }
     
     func isNeutralInvaderOn(position: Position) -> Bool {
-        return x == position.x && y == position.y && neutral
+        return (self.position == position) && neutral
     }
     
     func isNoNeutralInvaderOn(position: Position) -> Bool {
-        return x == position.x && y == position.y && !neutral
+        return (self.position == position) && !neutral
     }
+    
+    func getKillPositions(area: Area) -> [Position] {
+        return position.getKillPositions(area: area)
+    }
+    
+    
 }

@@ -18,7 +18,8 @@ struct Area: Codable, AreaProtocol {
         let yrange = (y1...y2)
         xrange.forEach { xCoord in
             yrange.forEach { yCoord in
-                if position.x != xCoord && position.y != yCoord { positions.append(Position(x: xCoord, y: yCoord)) }
+                let areaPosition = Position(x: xCoord, y: yCoord)
+                if position != areaPosition { positions.append(areaPosition) }
             }
         }
         return positions
@@ -27,14 +28,20 @@ struct Area: Codable, AreaProtocol {
     func getVerticalPositions(without position: Position) -> [Position] {
         var positions = [Position]()
         let yrange = (y1...y2)
-        yrange.forEach { if position.y != $0 { positions.append(Position(x: position.x, y: $0)) } }
+        yrange.forEach {
+            let yPosition = Position(x: position.x, y: $0)
+            if position != yPosition { positions.append(yPosition) }
+        }
         return positions
     }
     
     func getHorizontalPositions(without position: Position) -> [Position] {
         var positions = [Position]()
         let xrange = (x1...x2)
-        xrange.forEach { if position.x != $0 { positions.append(Position(x: $0, y: position.y)) } }
+        xrange.forEach {
+            let xPosition = Position(x: $0, y: position.y)
+            if position != xPosition { positions.append(xPosition) }
+        }
         return positions
     }
 }

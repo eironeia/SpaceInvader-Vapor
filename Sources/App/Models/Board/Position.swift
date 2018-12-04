@@ -85,7 +85,13 @@ extension Position: PositionInvalidProtocol {
 //MARK: - DistancePositionProtocol
 extension Position: DistancePositionProtocol {
     func distanceTo(position: Position) -> Int {
-        return max(abs(x-x), abs(y - y))
+        let differencePosition = self - position
+        return max(abs(differencePosition.x), abs(differencePosition.y))
+    }
+    
+    func stepsTo(position: Position) -> Int {
+        let differencePosition = self - position
+        return abs(differencePosition.x) + abs(differencePosition.y)
     }
 }
 

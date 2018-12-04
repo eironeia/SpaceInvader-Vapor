@@ -1,14 +1,11 @@
-import App
 import XCTest
-@testable import App
 
-final class AppTests: XCTestCase {
-    func testNothing() throws {
-        // add your tests here
+class AppTests: XCTestCase {
+
+    func testExample() {
+        // Use recording to get started writing UI tests.
+        // Use XCTAssert and related functions to verify your tests produce the correct results.
         XCTAssert(true)
     }
 
-    static let allTests = [
-        ("testNothing", testNothing)
-    ]
 }

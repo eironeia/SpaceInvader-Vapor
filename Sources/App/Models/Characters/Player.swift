@@ -35,14 +35,15 @@ struct Player: Codable {
     }
     
     func getMove(descriptor: PlayerMoveDescriptor) -> Move {
-        print("Getting shortest path... ")
+        print("Getting shortest path... 🥳")
         let shortestPath = descriptor.pathFinder.shortestPath(current: position, goal: descriptor.goalPosition) //Add multiple options first neutral invaders, etc. checking for multiple options paths
-        print("¡CALCULATED!")
         if let shortestPath = shortestPath,
             let nextPosition = shortestPath.first {
+            print("😎¡CALCULATED!🤓")
             return position.getMove(to: nextPosition)
         } else {
-            return Move(MoveTypes.up.rawValue)
+            print("NOT SHORTED PATH FOUND THINK SOMETHING DUDE!🚨🤯")
+            return Move(MoveTypes.left.rawValue)
         }
     }
     
@@ -88,9 +89,9 @@ struct Player: Codable {
             return neutralInvaderPosition
         }
         
-//        if let noNeutralInvaderPosition = getInvaderPosition(invaders: descriptor.invaders, isValidPosition: descriptor.isValidPosition) {
-//            return noNeutralInvaderPosition
-//        }
+        if let noNeutralInvaderPosition = getInvaderPosition(invaders: descriptor.invaders, isValidPosition: descriptor.isValidPosition) {
+            return noNeutralInvaderPosition
+        }
         
         return Position(x: Int(area.x2/(area.x1 == 0 ? 1 : area.x1)), y: Int(area.y2/(area.y1 == 0 ? 1 : area.y1)))
     }
@@ -165,7 +166,6 @@ extension Player {
             killPositionsNeutralInvader += $0.getKillPositions(area: area)
         }
         killPositionsNeutralInvader = killPositionsNeutralInvader.filter(isValidPosition)
-        killPositionsNeutralInvader.forEach{ print($0) }
         return killPositionsNeutralInvader.min { return position.stepsTo(position: $0) < position.stepsTo(position: $1) }
     }
     

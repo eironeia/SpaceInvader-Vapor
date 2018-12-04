@@ -45,6 +45,7 @@ extension Position: MovementPositionProtocol {
         if nextPosition.y > y { return Move.getMove(from: MoveTypes.down) }
         if nextPosition.x < x { return Move.getMove(from: MoveTypes.left) }
         if nextPosition.x > x { return Move.getMove(from: MoveTypes.right) }
+        print("HERE IS THE UP MOVEMENT")
         return Move.getMove(from: MoveTypes.up)
     }
 }

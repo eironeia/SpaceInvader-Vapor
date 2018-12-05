@@ -38,37 +38,6 @@ struct Position: Codable {
     }
 }
 
-//MARK: - Movement
-extension Position: MovementPositionProtocol {
-    func getMove(to nextPosition: Position) -> Move {
-        if nextPosition.y < y { return Move.getMove(from: MoveTypes.up) }
-        if nextPosition.y > y { return Move.getMove(from: MoveTypes.down) }
-        if nextPosition.x < x { return Move.getMove(from: MoveTypes.left) }
-        if nextPosition.x > x { return Move.getMove(from: MoveTypes.right) }
-        print("HERE IS THE UP MOVEMENT")
-        return Move.getMove(from: MoveTypes.up)
-    }
-    
-    func getNextClockPosition(candidate: Position) -> Position {
-        if candidate == top { return right }
-        if candidate == right { return down }
-        if candidate == down { return left }
-        if candidate == left { return top }
-        print("THIS SHOULDN'T BE CALLED")
-        return top
-    }
-    
-    func getNewSameDirectionAsPrevious(previous: Position) -> Position {
-        print("Previous:", previous, "Current:", self)
-        if previous == left { return right }
-        if previous == right {  return left }
-        if previous == top { return down }
-        if previous == down { return top }
-        print("THIS SHOULD NOT BE TRIGGERED")
-        return down
-    }
-}
-
 //MARK: - PositionInvalidProtocol
 extension Position: PositionInvalidProtocol {
     func isWallBetween(xPosition: Int, walls: [Position]) -> Bool {

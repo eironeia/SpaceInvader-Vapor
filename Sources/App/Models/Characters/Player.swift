@@ -34,7 +34,7 @@ struct Player: Codable {
     
     func getMove(descriptor: PlayerMoveDescriptor) -> Move {
         if let goalPosition = getGoalPosition(descriptor: descriptor) {
-            return position.getMove(to: goalPosition)
+            return DirectionHelper(position: position).getMove(to: goalPosition)
         } else {
             print("🚔🚔🚔🚔NOT SHORTED PATH FOUND THINK SOMETHING DUDE!🚔🚔🚔🚔")
             return Move(MoveTypes.left.rawValue)
@@ -52,15 +52,16 @@ struct Player: Codable {
             return result
         }
         
+        let scoreHelper = ScoreHelper(position: position)
         xrange.forEach {
             if position.x != $0 {
-                increaseScores(xPosition: $0, descriptor: descriptor, scoresPerMoveTypes: &scoresPerMoveTypes)
+                scoreHelper.increaseScores(xPosition: $0, descriptor: descriptor, scoresPerMoveTypes: &scoresPerMoveTypes)
             }
         }
         
         yrange.forEach {
             if position.y != $0 {
-                increaseScores(yPosition: $0, descriptor: descriptor, scoresPerMoveTypes: &scoresPerMoveTypes)
+                scoreHelper.increaseScores(yPosition: $0, descriptor: descriptor, scoresPerMoveTypes: &scoresPerMoveTypes)
             }
         }
         
@@ -78,93 +79,39 @@ struct Player: Codable {
     }
 }
 
-//MARK: - PlayerScore
-private extension Player {
-    func increaseScores(xPosition: Int, descriptor: PlayerKillMoveDescriptor, scoresPerMoveTypes: inout [MoveTypes: Int]) {
-        if xPosition < position.x {
-            increaseScores(xPosition: xPosition,
-                           movement: .left,
-                           descriptor: descriptor,
-                           scoresPerMoveTypes: &scoresPerMoveTypes)
-        } else {
-            increaseScores(xPosition: xPosition,
-                           movement: .right,
-                           descriptor: descriptor,
-                           scoresPerMoveTypes: &scoresPerMoveTypes)
-        }
-    }
-    
-    func increaseScores(yPosition: Int, descriptor: PlayerKillMoveDescriptor, scoresPerMoveTypes: inout [MoveTypes: Int]) {
-        if yPosition < position.y {
-            increaseScores(yPosition: yPosition,
-                           movement: .up,
-                           descriptor: descriptor,
-                           scoresPerMoveTypes: &scoresPerMoveTypes)
-        } else {
-            increaseScores(yPosition: yPosition,
-                           movement: .down,
-                           descriptor: descriptor,
-                           scoresPerMoveTypes: &scoresPerMoveTypes)
-        }
-    }
-    
-    func increaseScores(xPosition: Int, movement: MoveTypes, descriptor: PlayerKillMoveDescriptor, scoresPerMoveTypes: inout [MoveTypes: Int]) {
-        if !position.isWallBetween(xPosition: xPosition, walls: descriptor.walls) {
-            if descriptor.players.contains(where: { $0.x == xPosition && $0.y == position.y }) {
-                increaseScores(movement: movement, score: KillScore.player.rawValue, scoresPerMoveTypes: &scoresPerMoveTypes)
-            }
-            if descriptor.invaders.contains(where: { $0.isNoNeutralInvaderOn(position: Position(x: xPosition, y: position.y))}) {
-                increaseScores(movement: movement, score: KillScore.invader.rawValue, scoresPerMoveTypes: &scoresPerMoveTypes)
-            }
-        }
-    }
-    
-    func increaseScores(yPosition: Int, movement: MoveTypes, descriptor: PlayerKillMoveDescriptor, scoresPerMoveTypes: inout [MoveTypes: Int]) {
-        if !position.isWallBetween(yPosition: yPosition, walls: descriptor.walls) {
-            if descriptor.players.contains(where: { $0.y == yPosition && $0.x == position.x }) {
-                increaseScores(movement: movement, score: KillScore.player.rawValue, scoresPerMoveTypes: &scoresPerMoveTypes)
-            }
-            if descriptor.invaders.contains(where: { $0.isNoNeutralInvaderOn(position: Position(x: position.x, y: yPosition))}) {
-                increaseScores(movement: movement, score: KillScore.invader.rawValue, scoresPerMoveTypes: &scoresPerMoveTypes)
-            }
-        }
-    }
-    
-    func increaseScores(movement: MoveTypes, score: Int, scoresPerMoveTypes: inout [MoveTypes: Int]) {
-        if let currentScore = scoresPerMoveTypes[movement] {
-            scoresPerMoveTypes[movement] = currentScore + score
-        }
-    }
-}
-
 //MARK: - PlayerGoalPosition
 extension Player {
     func getGoalPosition(descriptor: PlayerMoveDescriptor) -> Position? {
+        let findTargetHelper = FindTargetPositionHelper()
+        let findTargetDescriptor = FindTargetPositionDescriptor(player: self, players: descriptor.players, invaders: descriptor.invaders, walls: descriptor.walls, isValidPosition: descriptor.isValidPosition)
         
         var nextPositions = [Position]()
-        if let neutralInvaderPosition = getNeutralInvaderPosition(invaders: descriptor.invaders),
-            let nextPosition = getNextPosition(pathFinder: descriptor.pathFinder, goalPosition: neutralInvaderPosition) {
-            print("👻: \(nextPosition)")
-            nextPositions.append(nextPosition)
+        if let neutralInvaderPosition = findTargetHelper.getNeutralInvaderPosition(descriptor: findTargetDescriptor) {
+            findTargetHelper.updateNextPositions(pathFinder: descriptor.pathFinder,
+                                                 current: position,
+                                                 goalPosition: neutralInvaderPosition,
+                                                 nextPositions: &nextPositions)
         }
         
         
-        if let playerPosition = getPlayerPosition(players: descriptor.players, walls: descriptor.walls, isValidPosition: descriptor.isValidPosition),
-            let nextPosition = getNextPosition(pathFinder: descriptor.pathFinder, goalPosition: playerPosition) {
-            print("🚀: \(nextPosition)")
-            nextPositions.append(nextPosition)
+        if let playerPosition = findTargetHelper.getPlayerPosition(descriptor: findTargetDescriptor) {
+            findTargetHelper.updateNextPositions(pathFinder: descriptor.pathFinder,
+                                                 current: position,
+                                                 goalPosition: playerPosition,
+                                                 nextPositions: &nextPositions)
         }
         
-        if let noNeutralInvaderPosition = getInvaderPosition(invaders: descriptor.invaders, walls: descriptor.walls, isValidPosition: descriptor.isValidPosition),
-            let nextPosition = getNextPosition(pathFinder: descriptor.pathFinder, goalPosition: noNeutralInvaderPosition) {
-            print("👾: \(nextPosition)")
-            nextPositions.append(nextPosition)
+        if let noNeutralInvaderPosition = findTargetHelper.getInvaderPosition(descriptor: findTargetDescriptor) {
+            findTargetHelper.updateNextPositions(pathFinder: descriptor.pathFinder,
+                                                 current: position,
+                                                 goalPosition: noNeutralInvaderPosition,
+                                                 nextPositions: &nextPositions)
         }
         
         if let nextPosition = nextPositions.min(by: { position.stepsTo(position: $0) < position.stepsTo(position: $1) }) {
             print("Selected ✅:", nextPosition)
             return nextPosition
-        } else if let emptyPosition = getEmptyPosition(invaders: descriptor.invaders, isValidPosition: descriptor.isValidPosition) {
+        } else if let emptyPosition = findTargetHelper.getEmptyPosition(descriptor: findTargetDescriptor) {
             print("Empty😶: \(emptyPosition)")
             return emptyPosition
         }
@@ -172,93 +119,5 @@ extension Player {
             print("🚨🚨🚨 RANDOM 🤪🤪🤪🤪")
             return Position(x: Int(descriptor.board.size.width/1), y: Int(descriptor.board.size.height/1))
         }
-    }
-    
-    private func getNextPosition(pathFinder: AStarPathfinder, goalPosition: Position) -> Position? {
-        let shortestPath = pathFinder.shortestPath(current: position, goal: goalPosition)
-        return shortestPath?.first
-    }
-    
-    func getInvaderPosition(invaders: [Invader], walls: [Position], isValidPosition: (Position) -> Bool) -> Position? {
-        guard fire else { return nil }
-        let neutralInvadersPosition = invaders.filter { !$0.neutral }.map { $0.position }
-        print(neutralInvadersPosition)
-        return getKillTargetPosition(target: neutralInvadersPosition, walls: walls, isValidPosition: isValidPosition)
-    }
-    
-    func getNeutralInvaderPosition(invaders: [Invader]) -> Position? {
-        return invaders.filter { return $0.neutral }.min { position.stepsTo(position: $0.position) < position.stepsTo(position: $1.position) }?.position
-    }
-    
-    func getPlayerPosition(players: [Position], walls: [Position], isValidPosition: (Position) -> Bool) -> Position? {
-        guard fire else { return nil }
-        return getKillTargetPosition(target: players, walls: walls, isValidPosition: isValidPosition)
-    }
-    
-    func getEmptyPosition(invaders: [Invader], isValidPosition: (Position) -> Bool) -> Position? {
-        //Get current player possible moves which valids positions
-        let emptyPositions = position.adjacentPositions().filter { isValidPosition($0) }
-        //Get invaders possible moves + current position
-        var possibleInvadersNextPositions = [Position]()
-        invaders.forEach {
-            if $0.neutral { return }
-            possibleInvadersNextPositions += $0.position.adjacentPositions()
-            possibleInvadersNextPositions.append($0.position)
-        }
-        //Remove from possible moves of current player positions which are potentially dangerous
-        let notPossibleInvaderPosition = emptyPositions.filter { !possibleInvadersNextPositions.contains($0) }
-        if !notPossibleInvaderPosition.isEmpty { //SAFE ZONES
-            if let smartPosition = getSmartDirection(possiblePositions: notPossibleInvaderPosition) {
-                return smartPosition
-            } else {
-                return notPossibleInvaderPosition[Int.random(in: 0..<notPossibleInvaderPosition.count)]
-            }
-        } else if !emptyPositions.isEmpty { //GO RISKY
-            if let smartPosition = getSmartDirection(possiblePositions: emptyPositions) {
-                return smartPosition
-            } else {
-                return emptyPositions[Int.random(in: 0..<emptyPositions.count)]
-            }
-        } else {
-            return nil
-        }
-    }
-    
-    //Move away of aliens & players
-    
-    //HELPER
-    private func getKillTargetPosition(target: [Position], walls: [Position], isValidPosition: (Position) -> Bool) -> Position? {
-        var killPositions = [Position]()
-        target.forEach { targetPosition in
-            killPositions += (targetPosition.getKillPositions(area: area))
-        }
-        print(killPositions)
-        return killPositions.filter(isValidPosition).min { return position.stepsTo(position: $0) < position.stepsTo(position: $1) }
-    }
-    
-    func getSmartDirection(possiblePositions: [Position]) -> Position? {
-        let firstCandidate = position.getNewSameDirectionAsPrevious(previous: previous)
-        var candidate = firstCandidate
-        if getCandidate(positions: possiblePositions, candidate: &candidate) { return candidate }
-        if possiblePositions.contains(firstCandidate) { return firstCandidate }
-        if getCandidate(positions: possiblePositions, candidate: &candidate) { return candidate }
-        if getCandidate(positions: possiblePositions, candidate: &candidate) { return candidate }
-        if getCandidate(positions: possiblePositions, candidate: &candidate) { return candidate }
-        print("ERRRORRR ❌❌❌❌❌❌")
-        return nil
-    }
-    
-    private func getCandidate(positions: [Position], candidate: inout Position) -> Bool {
-        candidate = position.getNextClockPosition(candidate: candidate)
-        return positions.contains(candidate)
-    }
-    
-    func getNextClockPosition(candidate: Position) -> Position {
-        if candidate == position.top { return position.right }
-        if candidate == position.right { return position.down }
-        if candidate == position.down { return position.left }
-        if candidate == position.left { return position.top }
-        print("THIS SHOULDN'T BE CALLED")
-        return position.top
     }
 }

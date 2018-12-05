@@ -127,6 +127,22 @@ extension PlayerTests {
             XCTAssertEqual(Position(x: 0, y: 2), position)
         }
     }
+    
+    //X = CURRENT PLAYER
+    // (0,0)   I   (2,0)
+    //   I   (1,1)   I
+    // (0,2)   X   (2,2)
+    // (0,3) (1,3) (2,3)
+    func testEmptyPosition() {
+        let invaders = [Invader(x: 1, y: 0, neutral: false), Invader(x: 0, y: 1, neutral: false), Invader(x: 2, y: 1, neutral: false)]
+        let isValidPosition: (Position) -> Bool = { [unowned self] position in
+            return self.isValidPosition(position: position, invaders: invaders)
+        }
+        if let position = player.getEmptyPosition(invaders: invaders, isValidPosition: isValidPosition) {
+            XCTAssertEqual(position, Position.init(x: 1, y: 3))
+        }
+        
+    }
 
     func isValidPosition(position: Position, players: [Position] = [Position](), invaders: [Invader] = [Invader](), walls: [Position] = [Position]()) -> Bool {
         return !walls.contains(position)

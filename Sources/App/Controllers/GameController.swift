@@ -13,7 +13,6 @@ class GameController: RouteCollection {
     func getMove(_ req: Request) throws -> Future<Move> {
         return try req.content.decode(GameData.self).map { gameData -> Move in
             print("**************************")
-            print("Receiving response")
             let nextMove = gameData.getNextMove()
             print(nextMove)
             return nextMove ?? Move.getMove(from: .down)

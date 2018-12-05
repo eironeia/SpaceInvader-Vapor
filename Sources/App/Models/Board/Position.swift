@@ -48,6 +48,23 @@ extension Position: MovementPositionProtocol {
         print("HERE IS THE UP MOVEMENT")
         return Move.getMove(from: MoveTypes.up)
     }
+    
+    func getNextClockPosition() -> Position {
+        if self == top {
+            return right
+        }
+        if self == right {
+            return down
+        }
+        if self == down {
+            return left
+        }
+        if self == left {
+            return top
+        }
+        print("THIS SHOULDN'T BE CALLED")
+        return top
+    }
 }
 
 //MARK: - PositionInvalidProtocol

@@ -9,6 +9,7 @@ struct PlayerMoveDescriptor {
     let players: [Position]
     let invaders: [Invader]
     let pathFinder: AStarPathfinder
+    let board: Board
     let isValidPosition: (Position) -> Bool
 }
 
@@ -31,12 +32,10 @@ struct Player: Codable {
     }
     
     func getMove(descriptor: PlayerMoveDescriptor) -> Move {
-        print("Getting next move with shortest path... 🥳")
         if let goalPosition = getGoalPosition(descriptor: descriptor) {
-            print("😎¡CALCULATED!🤓")
             return position.getMove(to: goalPosition)
         } else {
-            print("NOT SHORTED PATH FOUND THINK SOMETHING DUDE!🚨🤯")
+            print("🚔🚔🚔🚔NOT SHORTED PATH FOUND THINK SOMETHING DUDE!🚔🚔🚔🚔")
             return Move(MoveTypes.left.rawValue)
         }
     }
@@ -141,26 +140,37 @@ private extension Player {
 extension Player {
     func getGoalPosition(descriptor: PlayerMoveDescriptor) -> Position? {
         
+        var nextPositions = [Position]()
         if let neutralInvaderPosition = getNeutralInvaderPosition(invaders: descriptor.invaders),
             let nextPosition = getNextPosition(pathFinder: descriptor.pathFinder, goalPosition: neutralInvaderPosition) {
-            print("GOING TO 👻")
-            return nextPosition
+            print("👻: \(nextPosition)")
+            nextPositions.append(nextPosition)
         }
+        
         
         if let playerPosition = getPlayerPosition(players: descriptor.players, isValidPosition: descriptor.isValidPosition),
             let nextPosition = getNextPosition(pathFinder: descriptor.pathFinder, goalPosition: playerPosition) {
-            print("GOING TO 🚀")
-            return nextPosition
+            print("🚀: \(nextPosition)")
+            nextPositions.append(nextPosition)
         }
         
         if let noNeutralInvaderPosition = getInvaderPosition(invaders: descriptor.invaders, isValidPosition: descriptor.isValidPosition),
             let nextPosition = getNextPosition(pathFinder: descriptor.pathFinder, goalPosition: noNeutralInvaderPosition) {
-            print("GOING TO 👾")
-            return nextPosition
+            print("👾: \(nextPosition)")
+            nextPositions.append(nextPosition)
         }
         
-        print("RANDOM 🤪")
-        return Position(x: Int(area.x2/(area.x1 == 0 ? 1 : area.x1)), y: Int(area.y2/(area.y1 == 0 ? 1 : area.y1)))
+        if let nextPosition = nextPositions.min(by: { position.stepsTo(position: $0) < position.stepsTo(position: $1) }) {
+            print("Selected ✅:", nextPosition)
+            return nextPosition
+        } else if let emptyPosition = getEmptyPosition(invaders: descriptor.invaders, isValidPosition: descriptor.isValidPosition) {
+            print("Empty😶: \(emptyPosition)")
+            return emptyPosition
+        }
+        else {
+            print("🚨🚨🚨 RANDOM 🤪🤪🤪🤪")
+            return Position(x: Int(descriptor.board.size.width/1), y: Int(descriptor.board.size.height/1))
+        }
     }
     
     private func getNextPosition(pathFinder: AStarPathfinder, goalPosition: Position) -> Position? {
@@ -183,10 +193,35 @@ extension Player {
         return getKillTargetPosition(target: players, isValidPosition: isValidPosition)
     }
     
-    //Dodge player shot if not fire
-    func dogePlayerPosition() -> Position? {
-        return nil
+    func getEmptyPosition(invaders: [Invader], isValidPosition: (Position) -> Bool) -> Position? {
+        let emptyPositions = position.adjacentPositions().filter { $0 != previous && isValidPosition($0) }
+        var possibleInvadersNextPositions = [Position]()
+        invaders.forEach {
+            let invaderPosition = $0.position
+            var adjacentPositions = invaderPosition.adjacentPositions()
+            adjacentPositions.append($0.position)
+            possibleInvadersNextPositions += adjacentPositions
+            return
+        }
+        let notPossibleInvaderPosition = emptyPositions.filter { !possibleInvadersNextPositions.contains($0) }
+        if !notPossibleInvaderPosition.isEmpty {
+            return notPossibleInvaderPosition[Int.random(in: 0..<notPossibleInvaderPosition.count)]
+        } else if !emptyPositions.isEmpty {
+            return emptyPositions[Int.random(in: 0..<emptyPositions.count)]
+        } else {
+            return nil
+        }
     }
+    
+    //Dodge player shot if not fire
+//    func dogePlayerPosition(players: [Position], isValidPosition: (Position) -> Bool) -> Position? {
+//        guard !fire else { return nil}
+//        let selfKillPositions = position.getKillPositions(area: area)
+//        let positions = players.first { selfKillPositions.contains($0) }
+//        let possibleMovements = position.adjacentPositions().filter(isValidPosition)
+//
+//        return nil
+//    }
     
     //Move away of aliens & players
     

@@ -155,8 +155,7 @@ class FindTargetPositionHelperTests: XCTestCase {
         
         let findTargetPositionHelper = FindTargetPositionHelper()
         let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: walls, isValidPosition: isValidPosition)
-        
-        print("*****")
+        XCTAssert(false)
         if  player.fire,
             let position = findTargetPositionHelper.getNeutralInvaderPosition(descriptor: descriptor) {
         } else {

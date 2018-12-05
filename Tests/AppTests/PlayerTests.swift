@@ -101,7 +101,7 @@ extension PlayerTests {
     // (0,3) (1,3) (2,3)
     func testKillInvader() {
         let invaders = [Invader(x: 1, y: 0, neutral: false)]
-        let walls = [Position(x: 1, y: 1)]
+        let walls = [Position(x: 1, y: 1), Position(x: 0, y: 1)]
         
         let isValidPosition: (Position) -> Bool = { [unowned self] position in
             return self.isValidPosition(position: position, invaders: invaders, walls: walls)

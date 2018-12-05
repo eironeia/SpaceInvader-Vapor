@@ -7,13 +7,13 @@ struct  FindTargetPositionDescriptor {
     let walls: [Position]
     let isValidPosition: (Position) -> Bool
     
-init(player: Player, players: [Position] = [], invaders: [Invader] = [], walls: [Position] = [], isValidPosition: @escaping (Position) -> Bool) {
-    self.player = player
-    self.players = players
-    self.invaders = invaders
-    self.walls = walls
-    self.isValidPosition = isValidPosition
-}
+    init(player: Player, players: [Position] = [], invaders: [Invader] = [], walls: [Position] = [], isValidPosition: @escaping (Position) -> Bool) {
+        self.player = player
+        self.players = players
+        self.invaders = invaders
+        self.walls = walls
+        self.isValidPosition = isValidPosition
+    }
 }
 
 struct FindTargetPositionHelper {
@@ -22,9 +22,9 @@ struct FindTargetPositionHelper {
         return descriptor.invaders
             .filter { $0.neutral }
             .min {
-            let position = descriptor.player.position
-            return position.stepsTo(position: $0.position) < position.stepsTo(position: $1.position)
-        }?.position
+                let position = descriptor.player.position
+                return position.stepsTo(position: $0.position) < position.stepsTo(position: $1.position)
+            }?.position
     }
     
     func getInvaderPosition(descriptor: FindTargetPositionDescriptor) -> Position? {
@@ -111,18 +111,27 @@ private extension FindTargetPositionHelper {
     }
     
     func getKillTargetPosition(target: [Position], descriptor: FindTargetPositionDescriptor) -> Position? {
-        
         let killPositions = target.reduce([], { (killPositions, position) -> [Position] in
             var killPositions = killPositions
             killPositions += position.getKillPositions(area: descriptor.player.area)
+                .filter {
+                    !isWallOnBetween(position: $0, target: position, walls: descriptor.walls)
+            }
             return killPositions
         })
-        
+            .filter {
+                descriptor.isValidPosition($0) && $0 != descriptor.player.position
+        }
+        print(killPositions
+            .filter {
+                descriptor.isValidPosition($0) && $0 != descriptor.player.position
+        })
         return killPositions
-            .filter { descriptor.isValidPosition($0) && !isWallOnBetween(position: descriptor.player.position, target: $0, walls: descriptor.walls) }
-            .min {
-            let position = descriptor.player.position
-            return position.stepsTo(position: $0) < position.stepsTo(position: $1)
+            .filter {
+                descriptor.isValidPosition($0) && $0 != descriptor.player.position
+            }.min {
+                let position = descriptor.player.position
+                return position.stepsTo(position: $0) < position.stepsTo(position: $1)
         }
     }
     

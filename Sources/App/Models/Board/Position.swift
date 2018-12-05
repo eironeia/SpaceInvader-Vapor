@@ -22,11 +22,11 @@ struct Position: Codable {
     let y: Int
     
     //Vertical
-    private var top: Position { return Position(x: x, y: y - 1) }
-    private var down: Position { return Position(x: x, y: y + 1) }
+    var top: Position { return Position(x: x, y: y - 1) }
+    var down: Position { return Position(x: x, y: y + 1) }
     //Horizontal
-    private var left: Position { return Position(x: x - 1, y: y) }
-    private var right: Position { return Position(x: x + 1, y: y) }
+    var left: Position { return Position(x: x - 1, y: y) }
+    var right: Position { return Position(x: x + 1, y: y) }
     //Diagonals
     private var topLeft: Position { return Position(x: x - 1, y: y - 1) }
     private var topRight: Position { return Position(x: x + 1, y: y - 1) }
@@ -49,21 +49,23 @@ extension Position: MovementPositionProtocol {
         return Move.getMove(from: MoveTypes.up)
     }
     
-    func getNextClockPosition() -> Position {
-        if self == top {
-            return right
-        }
-        if self == right {
-            return down
-        }
-        if self == down {
-            return left
-        }
-        if self == left {
-            return top
-        }
+    func getNextClockPosition(candidate: Position) -> Position {
+        if candidate == top { return right }
+        if candidate == right { return down }
+        if candidate == down { return left }
+        if candidate == left { return top }
         print("THIS SHOULDN'T BE CALLED")
         return top
+    }
+    
+    func getNewSameDirectionAsPrevious(previous: Position) -> Position {
+        print("Previous:", previous, "Current:", self)
+        if previous == left { return right }
+        if previous == right {  return left }
+        if previous == top { return down }
+        if previous == down { return top }
+        print("THIS SHOULD NOT BE TRIGGERED")
+        return down
     }
 }
 

@@ -12,7 +12,7 @@ class GameData: Codable {
         if let moveToKill = getMoveToKill() { return moveToKill }
         let pathFinder = AStarPathfinder()
         pathFinder.datasource = self
-        let descriptor = PlayerMoveDescriptor(players: players, invaders: invaders, pathFinder: pathFinder, board: board, isValidPosition: isValidPosition)
+        let descriptor = PlayerMoveDescriptor(players: players, invaders: invaders, walls: board.walls, pathFinder: pathFinder, board: board, isValidPosition: isValidPosition)
         return player.getMove(descriptor: descriptor)
     }
 }

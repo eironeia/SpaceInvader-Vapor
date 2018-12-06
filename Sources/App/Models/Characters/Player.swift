@@ -84,34 +84,33 @@ extension Player {
     func getGoalPosition(descriptor: PlayerMoveDescriptor) -> Position? {
         let findTargetHelper = FindTargetPositionHelper()
         let findTargetDescriptor = FindTargetPositionDescriptor(player: self, players: descriptor.players, invaders: descriptor.invaders, walls: descriptor.walls, isValidPosition: descriptor.isValidPosition)
+        var nextPositions = [[Position]]()
         
-        var nextPositions = [Position]()
-        if let neutralInvaderPosition = findTargetHelper.getNeutralInvaderPosition(descriptor: findTargetDescriptor) {
-            findTargetHelper.updateNextPositions(pathFinder: descriptor.pathFinder,
-                                                 current: position,
-                                                 goalPosition: neutralInvaderPosition,
-                                                 nextPositions: &nextPositions)
+        //NEUTRAL INVADER
+        let neutralInvaderPositions = findTargetHelper.getNeutralInvaderPositions(descriptor: findTargetDescriptor)
+        if let shortestPaths = findTargetHelper.getShortestPaths(targets: neutralInvaderPositions, pathFinder: descriptor.pathFinder, descriptor: findTargetDescriptor) {
+            nextPositions += shortestPaths
         }
         
-        
-        if let playerPosition = findTargetHelper.getPlayerPosition(descriptor: findTargetDescriptor) {
-            findTargetHelper.updateNextPositions(pathFinder: descriptor.pathFinder,
-                                                 current: position,
-                                                 goalPosition: playerPosition,
-                                                 nextPositions: &nextPositions)
+        //INVADER
+        if let invaderPositions = findTargetHelper.getInvaderPositions(descriptor: findTargetDescriptor),
+            let shortestPaths = findTargetHelper.getShortestPaths(targets: invaderPositions, pathFinder: descriptor.pathFinder, descriptor: findTargetDescriptor) {
+            nextPositions += shortestPaths
         }
         
-        if let noNeutralInvaderPosition = findTargetHelper.getInvaderPosition(descriptor: findTargetDescriptor) {
-            findTargetHelper.updateNextPositions(pathFinder: descriptor.pathFinder,
-                                                 current: position,
-                                                 goalPosition: noNeutralInvaderPosition,
-                                                 nextPositions: &nextPositions)
+        //PLAYER
+        if let playerPosition = findTargetHelper.getPlayerPositions(descriptor: findTargetDescriptor),
+            let shortestPaths = findTargetHelper.getShortestPaths(targets: playerPosition, pathFinder: descriptor.pathFinder, descriptor: findTargetDescriptor) {
+            nextPositions += shortestPaths
         }
         
-        if let nextPosition = nextPositions.min(by: { position.stepsTo(position: $0) < position.stepsTo(position: $1) }) {
-            print("Selected ✅:", nextPosition)
-            return nextPosition
-        } else if let emptyPosition = findTargetHelper.getEmptyPosition(descriptor: findTargetDescriptor) {
+        //SHORT SHORTEST PATH
+        if !nextPositions.isEmpty {
+            print("Selected ✅:", nextPositions.min(by: { $0.count < $1.count })?.first ?? "-")
+            return nextPositions.min(by: { $0.count < $1.count })?.first
+        }
+        
+        if let emptyPosition = findTargetHelper.getEmptyPosition(descriptor: findTargetDescriptor) {
             print("Empty😶: \(emptyPosition)")
             return emptyPosition
         }

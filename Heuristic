@@ -7,12 +7,14 @@ Invaders neutrals are yummie
 
 ----
 
-Priorities:
 
-1. 
+Neutral invader:
+Return poition and found path
 
-if playerCanShoot {
-	if there are invaders (no neutrals) on range { return fireMove }
-}
+Invader:
+Return adjacent positions + position
 
-if there are neutrals invaders { return closest position }
+
+Player:
+Return adjacent positions + position
+

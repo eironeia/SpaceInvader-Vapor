@@ -18,16 +18,13 @@ struct  FindTargetPositionDescriptor {
 
 struct FindTargetPositionHelper {
     
-    func getNeutralInvaderPosition(descriptor: FindTargetPositionDescriptor) -> Position? {
+    func getNeutralInvaderPositions(descriptor: FindTargetPositionDescriptor) -> [Position] {
         return descriptor.invaders
             .filter { $0.neutral }
-            .min {
-                let position = descriptor.player.position
-                return position.stepsTo(position: $0.position) < position.stepsTo(position: $1.position)
-            }?.position
+            .map { $0.position }
     }
     
-    func getInvaderPosition(descriptor: FindTargetPositionDescriptor) -> Position? {
+    func getInvaderPositions(descriptor: FindTargetPositionDescriptor) -> [Position]? {
         guard descriptor.player.fire else { return nil }
         let neutralInvadersPosition = descriptor.invaders
             .filter { !$0.neutral }
@@ -35,7 +32,7 @@ struct FindTargetPositionHelper {
         return getKillTargetPosition(target: neutralInvadersPosition, descriptor: descriptor)
     }
     
-    func getPlayerPosition(descriptor: FindTargetPositionDescriptor) -> Position? {
+    func getPlayerPositions(descriptor: FindTargetPositionDescriptor) -> [Position]? {
         guard descriptor.player.fire else { return nil }
         return getKillTargetPosition(target: descriptor.players, descriptor: descriptor)
     }
@@ -46,9 +43,21 @@ struct FindTargetPositionHelper {
         return directionHelper.getSmartDirection(previous: descriptor.player.previous, possiblePositions: emptyPositions)
     }
     
+    //Delete?
     func updateNextPositions(pathFinder: AStarPathfinder, current: Position, goalPosition: Position, nextPositions: inout [Position]) {
         if let nextPosition = getNextPosition(pathFinder: pathFinder, current: current, goalPosition: goalPosition) {
             nextPositions.append(nextPosition)
+        }
+    }
+    
+    func getShortestPaths(targets: [Position], pathFinder: AStarPathfinder, descriptor: FindTargetPositionDescriptor) -> [[Position]]? {
+        guard !targets.isEmpty else { return nil }
+        return targets.reduce([]) { (positions, position) -> [[Position]] in
+            var positions = positions
+            if let shortestPath = pathFinder.shortestPath(current: descriptor.player.position, goal: position) {
+                positions.append(shortestPath)
+            }
+            return positions
         }
     }
     
@@ -110,29 +119,20 @@ private extension FindTargetPositionHelper {
         return emptyPositions
     }
     
-    func getKillTargetPosition(target: [Position], descriptor: FindTargetPositionDescriptor) -> Position? {
-        let killPositions = target.reduce([], { (killPositions, position) -> [Position] in
+    func getKillTargetPosition(target: [Position], descriptor: FindTargetPositionDescriptor) -> [Position] {
+        //Positions where target can be kill
+        let killTargetPositions = target.reduce([], { (killPositions, position) -> [Position] in
             var killPositions = killPositions
             killPositions += position.getKillPositions(area: descriptor.player.area)
+                //Remove positions where there is a wall between target and position on killing
                 .filter {
-                    !isWallOnBetween(position: $0, target: position, walls: descriptor.walls)
+                    descriptor.isValidPosition($0)
+                        && $0 != descriptor.player.position
+                        && !isWallOnBetween(position: $0, target: position, walls: descriptor.walls)
             }
             return killPositions
         })
-            .filter {
-                descriptor.isValidPosition($0) && $0 != descriptor.player.position
-        }
-        print(killPositions
-            .filter {
-                descriptor.isValidPosition($0) && $0 != descriptor.player.position
-        })
-        return killPositions
-            .filter {
-                descriptor.isValidPosition($0) && $0 != descriptor.player.position
-            }.min {
-                let position = descriptor.player.position
-                return position.stepsTo(position: $0) < position.stepsTo(position: $1)
-        }
+        return killTargetPositions
     }
     
     func getNextPosition(pathFinder: AStarPathfinder, current: Position, goalPosition: Position) -> Position? {

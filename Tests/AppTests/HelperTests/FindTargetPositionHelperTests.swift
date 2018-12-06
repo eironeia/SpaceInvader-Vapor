@@ -29,12 +29,6 @@ class FindTargetPositionHelperTests: XCTestCase {
         super.tearDown()
     }
     
-    //    func getInvaderPosition(descriptor: FindTargetPositionDescriptor) -> Position?
-    //    func getNeutralInvaderPosition(descriptor: FindTargetPositionDescriptor) -> Position?
-    //    func getPlayerPosition(descriptor: FindTargetPositionDescriptor) -> Position?
-    //    func getEmptyPosition(descriptor: FindTargetPositionDescriptor) -> Position?
-    //    func updateNextPositions(pathFinder: AStarPathfinder, current: Position, goalPosition: Position, nextPositions: inout [Position])
-    
     //X = CURRENT PLAYER
     //   I     I    NI
     // (0,1) (1,1) (2,1)
@@ -53,9 +47,9 @@ class FindTargetPositionHelperTests: XCTestCase {
         let findTargetPositionHelper = FindTargetPositionHelper()
         let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: [], isValidPosition: isValidPosition)
         
-        if  player.fire,
-            let position = findTargetPositionHelper.getNeutralInvaderPosition(descriptor: descriptor) {
-            XCTAssertEqual(Position(x: 2, y: 0), position)
+        if  player.fire {
+            let positions = findTargetPositionHelper.getNeutralInvaderPositions(descriptor: descriptor)
+            XCTAssertEqual(invaders.filter { $0.neutral }.map { $0.position }, positions)
         }
     }
     
@@ -75,8 +69,33 @@ class FindTargetPositionHelperTests: XCTestCase {
         let findTargetPositionHelper = FindTargetPositionHelper()
         let descriptor = FindTargetPositionDescriptor(player: player, players: players, invaders: invaders, walls: [], isValidPosition: isValidPosition)
         
-        if  let position = findTargetPositionHelper.getInvaderPosition(descriptor: descriptor) {
+        if player.fire,
+            let positions = findTargetPositionHelper.getInvaderPositions(descriptor: descriptor) {
+            let position = positionWithLessSteps(positions: positions)!
             XCTAssertEqual(Position(x: 0, y: 2), position)
+        }
+    }
+    
+    //X = CURRENT PLAYER
+    // (0,0)   I   (2,0)
+    //   W     W   (2,1)
+    // (0,2)   X   (2,2)
+    // (0,3) (1,3) (2,3)
+    func testInvaderWithWallsGoalPosition() {
+        let players = [Position(x: 1, y: 2)]
+        let invaders = [Invader(x: 1, y: 0, neutral: false)]
+        let walls = [Position(x: 0, y: 1), Position(x: 1, y: 1)]
+        
+        let isValidPosition: (Position) -> Bool = { [unowned self] position in
+            return self.isValidPosition(position: position, players: players, invaders: invaders, walls: walls)
+        }
+        
+        let findTargetPositionHelper = FindTargetPositionHelper()
+        let descriptor = FindTargetPositionDescriptor(player: player, players: players, invaders: invaders, walls: walls, isValidPosition: isValidPosition)
+        
+        if player.fire,
+            let positions = findTargetPositionHelper.getInvaderPositions(descriptor: descriptor) {
+            XCTAssertEqual([Position(x: 0, y: 0), Position(x: 2, y: 0)], positions)
         }
     }
     
@@ -155,11 +174,13 @@ class FindTargetPositionHelperTests: XCTestCase {
         
         let findTargetPositionHelper = FindTargetPositionHelper()
         let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: walls, isValidPosition: isValidPosition)
-        XCTAssert(false)
-        if  player.fire,
-            let position = findTargetPositionHelper.getNeutralInvaderPosition(descriptor: descriptor) {
+        
+        if  player.fire {
+            let positions = findTargetPositionHelper.getNeutralInvaderPositions(descriptor: descriptor)
+            let position = positionWithLessSteps(positions: positions)!
+            XCTAssertEqual(position, Position(x: 1, y: 0))
         } else {
-            print("Error")
+            XCTAssert(false)
         }
     }
     
@@ -167,6 +188,11 @@ class FindTargetPositionHelperTests: XCTestCase {
         return !walls.contains(position)
             && !players.contains(position)
             && !invaders.contains { $0.isNoNeutralInvaderOn(position: position) }
+    }
+    
+    func positionWithLessSteps(positions: [Position]) -> Position? {
+        let playerPosition = player.position
+        return positions.min { playerPosition.stepsTo(position: $0) < playerPosition.stepsTo(position: $1) }
     }
 }
 

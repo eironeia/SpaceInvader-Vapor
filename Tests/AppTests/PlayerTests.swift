@@ -109,8 +109,8 @@ extension PlayerTests {
         let findTargetHelper = FindTargetPositionHelper()
         let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: walls, isValidPosition: isValidPosition)
         
-        if let position = findTargetHelper.getInvaderPosition(descriptor: descriptor) {
-            XCTAssertEqual(position, Position(x: 2, y: 0))
+        if let positions = findTargetHelper.getInvaderPositions(descriptor: descriptor) {
+            XCTAssertEqual(positions, [Position(x: 0, y: 0), Position(x: 2, y: 0)])
         }
         else {
             XCTAssert(false)

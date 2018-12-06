@@ -43,13 +43,6 @@ struct FindTargetPositionHelper {
         return directionHelper.getSmartDirection(previous: descriptor.player.previous, possiblePositions: emptyPositions)
     }
     
-    //Delete?
-    func updateNextPositions(pathFinder: AStarPathfinder, current: Position, goalPosition: Position, nextPositions: inout [Position]) {
-        if let nextPosition = getNextPosition(pathFinder: pathFinder, current: current, goalPosition: goalPosition) {
-            nextPositions.append(nextPosition)
-        }
-    }
-    
     func getShortestPaths(targets: [Position], pathFinder: AStarPathfinder, descriptor: FindTargetPositionDescriptor) -> [[Position]]? {
         guard !targets.isEmpty else { return nil }
         return targets.reduce([]) { (positions, position) -> [[Position]] in
@@ -133,10 +126,5 @@ private extension FindTargetPositionHelper {
             return killPositions
         })
         return killTargetPositions
-    }
-    
-    func getNextPosition(pathFinder: AStarPathfinder, current: Position, goalPosition: Position) -> Position? {
-        let shortestPath = pathFinder.shortestPath(current: current, goal: goalPosition)
-        return shortestPath?.first
     }
 }

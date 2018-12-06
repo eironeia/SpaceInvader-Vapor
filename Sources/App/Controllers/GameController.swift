@@ -14,7 +14,7 @@ class GameController: RouteCollection {
         return try req.content.decode(GameData.self).map { gameData -> Move in
             print("**************************")
             let nextMove = gameData.getNextMove()
-            print(nextMove)
+            print(nextMove ?? "NO NEXT MOVE")
             return nextMove ?? Move.getMove(from: .down)
         }
     }

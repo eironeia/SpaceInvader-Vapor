@@ -40,21 +40,19 @@ struct FindTargetPositionHelper {
     func getEmptyPosition(descriptor: FindTargetPositionDescriptor) -> Position? {
         guard let emptyPositions = getEmptyPositions(descriptor: descriptor) else { return nil }
         let directionHelper = DirectionHelper(position: descriptor.player.position)
-        //DO magic?
-        return directionHelper.getSmartDirection(previous: descriptor.player.previous, possiblePositions: emptyPositions)
+        if let exitWallPosition = getExitWallPosition(descriptor: descriptor) {
+            return exitWallPosition
+        } else {
+            return directionHelper.getSmartDirection(previous: descriptor.player.previous, possiblePositions: emptyPositions)
+        }
     }
     
-    func getMagic(descriptor: FindTargetPositionDescriptor) -> Position? {
+    func getExitWallPosition(descriptor: FindTargetPositionDescriptor) -> Position? {
         let directionHelperPrevious = DirectionHelper(position: descriptor.player.previous)
         let directionHelper = DirectionHelper(position: descriptor.player.position)
-        let previousNoClock = directionHelperPrevious.getNextNoClockPosition(candidate: descriptor.player.previous)
-        let positionNoClock = directionHelper.getNextNoClockPosition(candidate: descriptor.player.position)
-        print("Player, previous: \(descriptor.player.previous) current: \(descriptor.player.position)")
-        print("walls:", descriptor.walls)
-        print("Previous left: \(previousNoClock),  Position left: \(positionNoClock)")
-        print("Wall contains previous position left: \(descriptor.walls.contains(where: { $0 == previousNoClock }))")
-        print("isValidPosition on position left: \(descriptor.isValidPosition(positionNoClock))")
-        print("Position on area: \(descriptor.player.isPositionOnArea(position: positionNoClock))")
+        let newDirection = directionHelper.getNewSameDirectionAsPrevious(previous: descriptor.player.previous)
+        let previousNoClock = directionHelperPrevious.getNextNoClockPosition(candidate: descriptor.player.position)
+        let positionNoClock = directionHelper.getNextNoClockPosition(candidate: newDirection)
         guard descriptor.walls.contains(where: { $0 == previousNoClock }),
             descriptor.isValidPosition(positionNoClock),
             descriptor.player.isPositionOnArea(position: positionNoClock) else {

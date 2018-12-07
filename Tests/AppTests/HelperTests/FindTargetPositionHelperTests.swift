@@ -198,7 +198,7 @@ class FindTargetPositionHelperTests: XCTestCase {
         
         let findTargetPositionHelper = FindTargetPositionHelper()
         let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: walls, isValidPosition: isValidPosition)
-        if let position = findTargetPositionHelper.getMagic(descriptor: descriptor) {
+        if let position = findTargetPositionHelper.getExitWallPosition(descriptor: descriptor) {
             XCTAssertEqual(position, Position(x: 1, y: 1))
         } else {
             XCTAssert(false)
@@ -226,7 +226,7 @@ class FindTargetPositionHelperTests: XCTestCase {
         
         let findTargetPositionHelper = FindTargetPositionHelper()
         let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: walls, isValidPosition: isValidPosition)
-        if let position = findTargetPositionHelper.getMagic(descriptor: descriptor) {
+        if let position = findTargetPositionHelper.getExitWallPosition(descriptor: descriptor) {
             XCTAssertEqual(position, Position(x: 2, y: 2))
         } else {
             XCTAssert(false)

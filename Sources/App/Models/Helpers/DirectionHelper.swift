@@ -23,12 +23,13 @@ struct DirectionHelper {
         if previous == position.top { return position.down }
         if previous == position.down { return position.top }
         print("THIS SHOULD NOT BE TRIGGERED")
-        return position.down
+        return position.right
     }
     
     func getSmartDirection(previous: Position, possiblePositions: [Position]) -> Position? {
         var candidate = getNewSameDirectionAsPrevious(previous: previous)
         if possiblePositions.contains(candidate) { return candidate }
+        print("GETTING CANDIDATE 🔥🔥🔥🔥🔥🔥")
         if getCandidate(positions: possiblePositions, candidate: &candidate) { return candidate }
         if getCandidate(positions: possiblePositions, candidate: &candidate) { return candidate }
         if getCandidate(positions: possiblePositions, candidate: &candidate) { return candidate }

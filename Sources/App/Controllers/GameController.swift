@@ -7,6 +7,7 @@ class GameController: RouteCollection {
     }
     
     func getCredentials(_ req: Request) throws -> Credentials {
+        print("GETTING CREDENTIALS")
         return Credentials()
     }
     

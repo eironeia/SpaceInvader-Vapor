@@ -40,6 +40,12 @@ struct FindTargetPositionHelper {
     func getEmptyPosition(descriptor: FindTargetPositionDescriptor) -> Position? {
         guard let emptyPositions = getEmptyPositions(descriptor: descriptor) else { return nil }
         let directionHelper = DirectionHelper(position: descriptor.player.position)
+//        if descriptor.walls.contains(where: { $0 == descriptor.player.previous.left}) //??
+//            && descriptor.isValidPosition(descriptor.player.position.left)
+//            && !descriptor.walls.contains(where: { $0 == descriptor.player.position.left}) {
+//            print("HERE COMES THE MAGIC ✨")
+//            return descriptor.player.position.left
+//        }
         return directionHelper.getSmartDirection(previous: descriptor.player.previous, possiblePositions: emptyPositions)
     }
     

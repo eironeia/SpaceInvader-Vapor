@@ -26,6 +26,7 @@ struct DirectionHelper {
         return position.right
     }
     
+    //Candidate is the direction which is going to straight
     func getSmartDirection(previous: Position, possiblePositions: [Position]) -> Position? {
         var candidate = getNewSameDirectionAsPrevious(previous: previous)
         if possiblePositions.contains(candidate) { return candidate }
@@ -44,6 +45,15 @@ struct DirectionHelper {
         if candidate == position.down { return position.left }
         if candidate == position.left { return position.top }
         print("THIS SHOULDN'T BE CALLED")
+        return position.top
+    }
+    
+    func getNextNoClockPosition(candidate: Position) -> Position {
+        if candidate == position.top { return position.left }
+        if candidate == position.right { return position.top }
+        if candidate == position.down { return position.right }
+        if candidate == position.left { return position.down }
+        print("THIS SHOULDN'T BE CALLED EITHER")
         return position.top
     }
 }

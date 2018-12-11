@@ -5,13 +5,15 @@ struct  FindTargetPositionDescriptor {
     let players: [Position]
     let invaders: [Invader]
     let walls: [Position]
+    let area: Area
     let isValidPosition: (Position) -> Bool
     
-    init(player: Player, players: [Position] = [], invaders: [Invader] = [], walls: [Position] = [], isValidPosition: @escaping (Position) -> Bool) {
+    init(player: Player, players: [Position] = [], invaders: [Invader] = [], walls: [Position] = [], area: Area, isValidPosition: @escaping (Position) -> Bool) {
         self.player = player
         self.players = players
         self.invaders = invaders
         self.walls = walls
+        self.area = area
         self.isValidPosition = isValidPosition
     }
 }
@@ -122,6 +124,11 @@ private extension FindTargetPositionHelper {
                 positions.append(invader.position)
             }
             return positions
+        }
+        //Get players shotting range
+        let possiblePlayerShootingPositions = descriptor.players.reduce([]) { (positions, playerPosition) -> [Position]  in
+            var positions = positions
+            playerPosition.getKillPositions(area: descriptor.area)
         }
         //Remove from possible moves of current player positions which are potentially dangerous
         let notPossibleInvaderPosition = emptyPositions.filter { !possibleInvadersNextPositions.contains($0) }

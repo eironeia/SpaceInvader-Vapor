@@ -9,6 +9,7 @@ class GameData: Codable {
     let invaders: [Invader]
     
     func getNextMove() -> Move? {
+        if let shouldCheckDodge = MovesStack.shared.shouldCheckForDodge { }
         if let moveToKill = getMoveToKill() { return moveToKill }
         let pathFinder = AStarPathfinder()
         pathFinder.datasource = self
@@ -26,10 +27,19 @@ private extension GameData {
     }
     
     func getMoveToKill() -> Move? {
-        let descriptor = PlayerKillMoveDescriptor(players: players,
-                                                  invaders: invaders,
-                                                  walls: board.walls)
+        let descriptor = getPlayerKillMoveDescriptor()
         return player.getKillMove(descriptor: descriptor)
+    }
+    
+    func getPlayerKillMoveDescriptor() -> PlayerKillMoveDescriptor {
+        return PlayerKillMoveDescriptor(players: players,
+                                        invaders: invaders,
+                                        walls: board.walls)
+    }
+    
+    func getDodgeMovement() {
+        let descriptor = getPlayerKillMoveDescriptor()
+        
     }
 }
 

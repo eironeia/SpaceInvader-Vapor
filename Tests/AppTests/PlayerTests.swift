@@ -107,7 +107,7 @@ extension PlayerTests {
             return self.isValidPosition(position: position, invaders: invaders, walls: walls)
         }
         let findTargetHelper = FindTargetPositionHelper()
-        let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: walls, isValidPosition: isValidPosition)
+        let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: walls, area: player.area, isValidPosition: isValidPosition)
         
         if let positions = findTargetHelper.getInvaderPositions(descriptor: descriptor) {
             XCTAssertEqual(positions, [Position(x: 0, y: 0), Position(x: 2, y: 0)])
@@ -120,9 +120,6 @@ extension PlayerTests {
 
 //MARK: - getGoalPosition
 extension PlayerTests {
- 
-    
-    
     func isValidPosition(position: Position, players: [Position] = [Position](), invaders: [Invader] = [Invader](), walls: [Position] = [Position]()) -> Bool {
         return !walls.contains(position)
             && !players.contains(position)

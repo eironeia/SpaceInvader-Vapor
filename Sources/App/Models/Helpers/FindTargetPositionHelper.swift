@@ -126,10 +126,10 @@ private extension FindTargetPositionHelper {
             return positions
         }
         //Get players shotting range
-        let possiblePlayerShootingPositions = descriptor.players.reduce([]) { (positions, playerPosition) -> [Position]  in
-            var positions = positions
-            playerPosition.getKillPositions(area: descriptor.area)
-        }
+//        let possiblePlayerShootingPositions = descriptor.players.reduce([]) { (positions, playerPosition) -> [Position]  in
+//            var positions = positions
+//            playerPosition.getKillPositions(area: descriptor.area)
+//        }
         //Remove from possible moves of current player positions which are potentially dangerous
         let notPossibleInvaderPosition = emptyPositions.filter { !possibleInvadersNextPositions.contains($0) }
         if !notPossibleInvaderPosition.isEmpty { return notPossibleInvaderPosition }

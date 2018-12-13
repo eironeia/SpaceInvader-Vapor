@@ -15,6 +15,7 @@ struct MapsDataCandidatePositionsDescriptor {
 
 struct CandidatePositions {
     var index: Int
+    var centerPosition: Position
     var candidates: [Position]
 }
 
@@ -33,9 +34,10 @@ class MapsData {
     }
     
     func getCandidatePosition(descriptor: MapsDataCandidatePositionsDescriptor) -> Position? {
-        if var candidatePositions = candidatePositions[descriptor.gameID] {
+        if let candidatePositions = candidatePositions[descriptor.gameID] {
             var index = candidatePositions.index
             let currentCandidate = candidatePositions.candidates[index]
+            print(candidatePositions)
             if currentCandidate == descriptor.playerPosition {
                 index = candidatePositions.candidates.count - 1 == index ? 0 : index + 1
                 self.candidatePositions[descriptor.gameID]?.index = index
@@ -46,6 +48,26 @@ class MapsData {
             guard let candidatePostions = getCandidatePositions(descriptor: descriptor) else { return nil }
             self.candidatePositions[descriptor.gameID] = candidatePostions
             return candidatePostions.candidates[candidatePostions.index]
+        }
+    }
+    
+    func getCenterCandidatePosition(descriptor: MapsDataCandidatePositionsDescriptor) -> Position? {
+        return candidatePositions[descriptor.gameID]?.centerPosition
+    }
+    
+    func updateIndexIfNeeded(position: Position, gameID: String) {
+        if let candidatePositions = candidatePositions[gameID] {
+            let index = candidatePositions.index
+            if candidatePositions.candidates[index] == position {
+                updateIndex(gameID: gameID)
+            }
+        }
+    }
+    
+    func updateIndex(gameID: String) {
+        if let candidatePositions = candidatePositions[gameID] {
+            let index = candidatePositions.index
+            self.candidatePositions[gameID]?.index = candidatePositions.candidates.count - 1 == index ? 0 : index + 1
         }
     }
     
@@ -74,6 +96,7 @@ private extension MapsData {
                 return nil
         }
         return CandidatePositions(index: 0,
+                                  centerPosition: centerPosition,
                                   candidates: [firstQuarterPosition,
                                                centerPosition,
                                                secondQuarterPosition,
@@ -83,7 +106,9 @@ private extension MapsData {
     }
     
     func getValidPosition(candidate: Position, descriptor: MapsDataCandidatePositionsDescriptor) -> Position? {
+        print("Looking for valid position")
         if descriptor.isValidPosition(candidate) { return candidate }
+        print("Have to dig more")
         for distance in 1...10 {
             if let candidatePosition = getPositionsWithDistance(position: candidate, distance: distance, descriptor: descriptor) {
                 return candidatePosition

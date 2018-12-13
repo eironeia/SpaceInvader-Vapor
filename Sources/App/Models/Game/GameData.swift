@@ -14,6 +14,8 @@ class GameData: Codable {
         //Start A* Algorithm
         let pathFinder = AStarPathfinder()
         pathFinder.datasource = self
+        //Update index of path if needed
+        MapsData.shared.updateIndexIfNeeded(position: player.position, gameID: game.id.uuidString)
         //Get saved walls for this game
         let walls = getWalls()
         let mapsDataCandidatePositionDescriptor = MapsDataCandidatePositionsDescriptor(gameID: game.id.uuidString,

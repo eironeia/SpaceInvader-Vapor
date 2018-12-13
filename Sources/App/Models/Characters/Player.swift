@@ -117,6 +117,15 @@ extension Player {
             let nextPosition = shortestPath.first {
             print("QUARTERS PATH 🙌🏻")
             return nextPosition
+        } else {
+            MapsData.shared.updateIndex(gameID: descriptor.mapsDataCandidatePositionDescriptor.gameID)
+        }
+        
+        if let centerPosition = MapsData.shared.getCenterCandidatePosition(descriptor: descriptor.mapsDataCandidatePositionDescriptor),
+            let shortestPath = descriptor.pathFinder.shortestPath(current: position, goal: centerPosition),
+            let nextPosition = shortestPath.first {
+            print("GOING CENTER 🤷🏻‍♂️")
+            return nextPosition
         }
         
         if let emptyPosition = findTargetHelper.getEmptyPosition(descriptor: findTargetDescriptor) {

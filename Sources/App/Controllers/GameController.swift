@@ -15,6 +15,7 @@ class GameController: RouteCollection {
     func getMove(_ req: Request) throws -> Future<Move> {
         return try req.content.decode(GameData.self).map { gameData -> Move in
             print("**************************")
+            print("CURRENT:", gameData.player.position)
             let nextMove = gameData.getNextMove()
             print(nextMove ?? "NO NEXT MOVE")
             return nextMove ?? Move.getMove(from: .down)

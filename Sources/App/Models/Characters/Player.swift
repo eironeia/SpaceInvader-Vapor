@@ -11,6 +11,7 @@ struct PlayerMoveDescriptor {
     let walls: [Position]
     let pathFinder: AStarPathfinder
     let board: Board
+    let area: Area
     let isValidPosition: (Position) -> Bool
 }
 
@@ -83,7 +84,7 @@ struct Player: Codable {
 extension Player {
     func getGoalPosition(descriptor: PlayerMoveDescriptor) -> Position? {
         let findTargetHelper = FindTargetPositionHelper()
-        let findTargetDescriptor = FindTargetPositionDescriptor(player: self, players: descriptor.players, invaders: descriptor.invaders, walls: descriptor.walls, isValidPosition: descriptor.isValidPosition)
+        let findTargetDescriptor = FindTargetPositionDescriptor(player: self, players: descriptor.players, invaders: descriptor.invaders, walls: descriptor.walls, area: descriptor.area, isValidPosition: descriptor.isValidPosition)
         var nextPositions = [[Position]]()
         
         //NEUTRAL INVADER

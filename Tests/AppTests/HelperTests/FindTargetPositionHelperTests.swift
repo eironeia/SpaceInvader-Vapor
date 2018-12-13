@@ -45,7 +45,7 @@ class FindTargetPositionHelperTests: XCTestCase {
         }
         
         let findTargetPositionHelper = FindTargetPositionHelper()
-        let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: [], isValidPosition: isValidPosition)
+        let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: [], area: player.area, isValidPosition: isValidPosition)
         
         if  player.fire {
             let positions = findTargetPositionHelper.getNeutralInvaderPositions(descriptor: descriptor)
@@ -67,7 +67,7 @@ class FindTargetPositionHelperTests: XCTestCase {
         }
         
         let findTargetPositionHelper = FindTargetPositionHelper()
-        let descriptor = FindTargetPositionDescriptor(player: player, players: players, invaders: invaders, walls: [], isValidPosition: isValidPosition)
+        let descriptor = FindTargetPositionDescriptor(player: player, players: players, invaders: invaders, walls: [], area: player.area, isValidPosition: isValidPosition)
         
         if player.fire,
             let positions = findTargetPositionHelper.getInvaderPositions(descriptor: descriptor) {
@@ -91,7 +91,7 @@ class FindTargetPositionHelperTests: XCTestCase {
         }
         
         let findTargetPositionHelper = FindTargetPositionHelper()
-        let descriptor = FindTargetPositionDescriptor(player: player, players: players, invaders: invaders, walls: walls, isValidPosition: isValidPosition)
+        let descriptor = FindTargetPositionDescriptor(player: player, players: players, invaders: invaders, walls: walls, area: player.area, isValidPosition: isValidPosition)
         
         if player.fire,
             let positions = findTargetPositionHelper.getInvaderPositions(descriptor: descriptor) {
@@ -114,7 +114,7 @@ class FindTargetPositionHelperTests: XCTestCase {
         }
         
         let findTargetPositionHelper = FindTargetPositionHelper()
-        let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: [], isValidPosition: isValidPosition)
+        let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: [], area: player.area, isValidPosition: isValidPosition)
         
         if let position = findTargetPositionHelper.getEmptyPosition(descriptor: descriptor) {
             XCTAssertEqual(position, Position.init(x: 1, y: 3))
@@ -169,11 +169,11 @@ class FindTargetPositionHelperTests: XCTestCase {
         let invaders = [Invader(x: 1, y: 0, neutral: true)]
         let walls = [Position(x: 0, y: 1), Position(x: 1, y: 1)]
         let isValidPosition: (Position) -> Bool = { [unowned self] position in
-            return self.isValidPosition(position: self.player.position, invaders: invaders, walls: walls)
+            return self.isValidPosition(position: position, invaders: invaders, walls: walls)
         }
         
         let findTargetPositionHelper = FindTargetPositionHelper()
-        let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: walls, isValidPosition: isValidPosition)
+        let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: walls, area: player.area, isValidPosition: isValidPosition)
         
         if  player.fire {
             let positions = findTargetPositionHelper.getNeutralInvaderPositions(descriptor: descriptor)
@@ -193,11 +193,11 @@ class FindTargetPositionHelperTests: XCTestCase {
         let invaders = [Invader(x: 1, y: 0, neutral: true)]
         let walls = [Position(x: 0, y: 1), Position(x: 2, y: 1), Position(x: 0, y: 3), Position(x: 1, y: 3), Position(x: 2, y: 3)]
         let isValidPosition: (Position) -> Bool = { [unowned self] position in
-            return self.isValidPosition(position: self.player.position, invaders: invaders, walls: walls)
+            return self.isValidPosition(position: position, invaders: invaders, walls: walls)
         }
         
         let findTargetPositionHelper = FindTargetPositionHelper()
-        let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: walls, isValidPosition: isValidPosition)
+        let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: walls, area: player.area, isValidPosition: isValidPosition)
         if let position = findTargetPositionHelper.getExitWallPosition(descriptor: descriptor) {
             XCTAssertEqual(position, Position(x: 1, y: 1))
         } else {
@@ -221,11 +221,11 @@ class FindTargetPositionHelperTests: XCTestCase {
         let invaders = [Invader(x: 1, y: 0, neutral: true)]
         let walls = [Position(x: 0, y: 1), Position(x: 2, y: 1), Position(x: 0, y: 3), Position(x: 1, y: 3), Position(x: 2, y: 3)]
         let isValidPosition: (Position) -> Bool = { [unowned self] position in
-            return self.isValidPosition(position: self.player.position, invaders: invaders, walls: walls)
+            return self.isValidPosition(position: position, invaders: invaders, walls: walls)
         }
         
         let findTargetPositionHelper = FindTargetPositionHelper()
-        let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: walls, isValidPosition: isValidPosition)
+        let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: walls, area: player.area, isValidPosition: isValidPosition)
         if let position = findTargetPositionHelper.getExitWallPosition(descriptor: descriptor) {
             XCTAssertEqual(position, Position(x: 2, y: 2))
         } else {
@@ -233,7 +233,66 @@ class FindTargetPositionHelperTests: XCTestCase {
         }
     }
     
+    // x1 = 0 y1 = 0
+    // x2 = 0 y2 = 3
+    //
+    // (0,0) (1,0) (2,0)
+    // (0,1) (1,1)   I
+    // (0,2)   X   (2,2)
+    // (0,3)  PE   (2,3)
+    func testGetEmptyDirection() {
+        let findTargetPositionHelper = FindTargetPositionHelper()
+        let walls: [Position] = []
+        let invaders = [Invader(x: 2, y: 1, neutral: false)]
+        let players = [Position(x: 1, y: 3)]
+        
+        let isValidPosition: (Position) -> Bool = { [unowned self] position in
+            return self.isValidPosition(position: position, players: players, invaders: invaders, walls: walls)
+        }
+        
+        let descriptor = FindTargetPositionDescriptor(player: player, players: players, invaders: invaders, walls: walls, area: player.area, isValidPosition: isValidPosition)
+        XCTAssertEqual(findTargetPositionHelper.getEmptyPosition(descriptor: descriptor), Position(x: 0, y: 2))
+    }
     
+    // x1 = 0 y1 = 0
+    // x2 = 0 y2 = 3
+    //
+    // (0,0) (1,0) (2,0)
+    //   I   (1,1)   I
+    // (0,2)   X   (2,2)
+    // (0,3) (1,3) (2,3)
+    func testGetEmptyDirection2() {
+        let findTargetPositionHelper = FindTargetPositionHelper()
+        let walls = [Position(x: 2, y: 2)]
+        let invaders = [Invader(x: 0, y: 1, neutral: false)]
+        
+        let isValidPosition: (Position) -> Bool = { [unowned self] position in
+            return self.isValidPosition(position: position, invaders: invaders, walls: walls)
+        }
+        
+        let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: [Invader(x: 2, y: 1, neutral: false), Invader(x: 0, y: 1, neutral: false)], walls: [Position(x: 2, y: 3)], area: player.area, isValidPosition: isValidPosition)
+        XCTAssertEqual(findTargetPositionHelper.getEmptyPosition(descriptor: descriptor), Position(x: 1, y: 3))
+    }
+    
+    // x1 = 0 y1 = 0
+    // x2 = 0 y2 = 3
+    //
+    // (0,0) (1,0) (2,0)
+    //   I   (1,1) (2,1)
+    // (0,2)   X     W
+    // (0,3) (1,3) (2,3)
+    func testGetEmptyDirection3() {
+        let findTargetPositionHelper = FindTargetPositionHelper()
+        let walls = [Position(x: 2, y: 2)]
+        let invaders = [Invader(x: 0, y: 1, neutral: false)]
+        
+        let isValidPosition: (Position) -> Bool = { [unowned self] position in
+            return self.isValidPosition(position: position, invaders: invaders, walls: walls)
+        }
+        
+        let descriptor = FindTargetPositionDescriptor(player: player, players: [], invaders: invaders, walls: walls, area: player.area, isValidPosition: isValidPosition)
+        XCTAssertEqual(findTargetPositionHelper.getEmptyPosition(descriptor: descriptor), Position(x: 1, y: 3))
+    }
     
     func isValidPosition(position: Position, players: [Position] = [Position](), invaders: [Invader] = [Invader](), walls: [Position] = [Position]()) -> Bool {
         return !walls.contains(position)

@@ -40,11 +40,15 @@ struct FindTargetPositionHelper {
     }
     
     func getEmptyPosition(descriptor: FindTargetPositionDescriptor) -> Position? {
+//        print("Getting empty position ⚪️")
         guard let emptyPositions = getEmptyPositions(descriptor: descriptor) else { return nil }
+//        print("Still in 🌚")
         let directionHelper = DirectionHelper(position: descriptor.player.position)
         if let exitWallPosition = getExitWallPosition(descriptor: descriptor) {
+//            print("exitWallPosition 🚀")
             return exitWallPosition
         } else {
+//            print("GO AROUND 🤪")
             return directionHelper.getSmartDirection(previous: descriptor.player.previous, possiblePositions: emptyPositions)
         }
     }
@@ -78,13 +82,8 @@ struct FindTargetPositionHelper {
         
         if position.x == target.x {
             var range: [Int] = []
-            
-            if position.y > target.y { //TOP
-                range = Array(target.y...position.y)
-            } else {                   //DOWN
-                range = Array(position.y...target.y)
-            }
-            
+            if position.y > target.y { range = Array(target.y...position.y)}
+            else { range = Array(position.y...target.y) }
             for y in range {
                 let position = Position(x: position.x, y: y)
                 if walls.contains(position) {
@@ -95,12 +94,8 @@ struct FindTargetPositionHelper {
         
         if position.y == target.y {
             var range: [Int]!
-            if position.x > target.x {   //LEFT
-                range = Array(target.x...position.x)
-            } else {                     //RIGHT
-                range = Array(position.x...target.x)
-            }
-            
+            if position.x > target.x {   range = Array(target.x...position.x)}
+            else { range = Array(position.x...target.x) }
             for x in range {
                 let position = Position(x: x, y: position.y)
                 if walls.contains(position) {
@@ -114,21 +109,18 @@ struct FindTargetPositionHelper {
     func getEmptyPositions(descriptor: FindTargetPositionDescriptor) -> [Position]? {
         //Get current player possible moves which valids positions
         let emptyPositions = descriptor.player.position.adjacentPositions().filter(descriptor.isValidPosition)
+        
         //Get invaders possible moves + current position
-        let possibleInvadersNextPositions = descriptor.invaders.reduce([]) { (positions, invader) -> [Position] in
-            var positions = positions
-            if !invader.neutral {
-                positions += invader.position.adjacentPositions()
-                positions.append(invader.position)
-            }
-            return positions
-        }
+        let possibleInvadersNextPositions = getPossibleInvadersNextPositions(invaders: descriptor.invaders)
+        
         //Get positions where I can be killed
         let iCanBeKilledPositions = selfkillPoistion(descriptor: descriptor)
+        
         //Remove from possible moves of current player positions which are potentially dangerous
         let notPossibleInvaderPosition = emptyPositions.filter { !possibleInvadersNextPositions.contains($0) }
+        
         let extremeCase = notPossibleInvaderPosition.filter { !iCanBeKilledPositions.contains($0) }
-        print("1.\(emptyPositions), 2. \(notPossibleInvaderPosition), 3.\(extremeCase), 4.\(iCanBeKilledPositions)")
+//        print("1.\(emptyPositions), 2. \(notPossibleInvaderPosition), 3.\(extremeCase), 4.\(iCanBeKilledPositions)")
         if !extremeCase.isEmpty { return extremeCase }
         if !notPossibleInvaderPosition.isEmpty { return notPossibleInvaderPosition }
         if !emptyPositions.isEmpty { return emptyPositions }
@@ -165,6 +157,17 @@ private extension FindTargetPositionHelper {
                 yrange.forEach { result.append(Position(x: playerPosition.x, y: $0)) }
             }
             return result
+        }
+    }
+    
+    func getPossibleInvadersNextPositions(invaders: [Invader]) -> [Position] {
+        return invaders.reduce([]) { (positions, invader) -> [Position] in
+            var positions = positions
+            if !invader.neutral {
+                positions += invader.position.adjacentPositions()
+                positions.append(invader.position)
+            }
+            return positions
         }
     }
 }

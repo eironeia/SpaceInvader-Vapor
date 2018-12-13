@@ -13,6 +13,7 @@ struct PlayerMoveDescriptor {
     let board: Board
     let area: Area
     let isValidPosition: (Position) -> Bool
+    let mapsDataCandidatePositionDescriptor: MapsDataCandidatePositionsDescriptor
 }
 
 struct PlayerKillMoveDescriptor {
@@ -109,6 +110,13 @@ extension Player {
         if !nextPositions.isEmpty {
             print("Selected ✅:", nextPositions.min(by: { $0.count < $1.count })?.first ?? "-")
             return nextPositions.min(by: { $0.count < $1.count })?.first
+        }
+        
+        if let candidatePosition = MapsData.shared.getCandidatePosition(descriptor: descriptor.mapsDataCandidatePositionDescriptor),
+            let shortestPath = descriptor.pathFinder.shortestPath(current: position, goal: candidatePosition),
+            let nextPosition = shortestPath.first {
+            print("QUARTERS PATH 🙌🏻")
+            return nextPosition
         }
         
         if let emptyPosition = findTargetHelper.getEmptyPosition(descriptor: findTargetDescriptor) {

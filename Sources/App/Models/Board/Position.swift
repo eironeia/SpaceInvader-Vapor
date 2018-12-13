@@ -17,7 +17,7 @@ protocol MovementPositionProtocol {
     func getMove(to nextPosition: Position) -> Move
 }
 
-struct Position: Codable {
+struct Position: Codable, Hashable {
     let x: Int
     let y: Int
     

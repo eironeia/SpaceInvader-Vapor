@@ -4,6 +4,7 @@ class GameController: RouteCollection {
     func boot(router: Router) throws {
         router.post("name", use: getCredentials)
         router.post("move", use: getMove)
+        router.get("reset123", use: resetStuff)
     }
     
     func getCredentials(_ req: Request) throws -> Credentials {
@@ -18,5 +19,10 @@ class GameController: RouteCollection {
             print(nextMove ?? "NO NEXT MOVE")
             return nextMove ?? Move.getMove(from: .down)
         }
+    }
+    
+    func resetStuff(_ req: Request) throws -> String {
+        MapsData.shared.resetStuff()
+        return "Cleaned!"
     }
 }
